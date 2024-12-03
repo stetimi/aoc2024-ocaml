@@ -2,5 +2,8 @@ open OUnit2
 
 let () =
   run_test_tt_main (
-    Test_day1.day1_tests 
+    "AOC 2024 tests" >::: [
+      Test_day1.day1_tests;
+      Test_day2.day2_tests 
+    ]
   )

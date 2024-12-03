@@ -13,13 +13,13 @@ let read_lists lines =
 
 let read_input () = In_channel.read_lines "inputs/day1.txt" |> read_lists
 
-let day1A () =
+let part_a () =
   let (first, second) = read_input () in
   let sort = List.sort ~compare:Int.compare in
   let diffs = List.zip_exn (sort first) (sort second) |> List.map ~f:(fun (x, y) -> Int.abs (x - y)) in
   List.sum (module Int) diffs ~f:Fun.id
 
-let day1B () =
+let part_b () =
   let (first, second) = read_input () in
   let second = Bag.of_list second in
   let counts = List.map first ~f:(fun x1 -> x1 * Bag.count second ~f:(fun x2 -> x1 = x2)) in
