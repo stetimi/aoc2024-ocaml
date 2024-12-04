@@ -24,8 +24,19 @@ let is_safe report =
   let is_safe n = sign_first <> 0 && (sign n = sign_first) && (Int.abs n >= 1) && (Int.abs n <= 3) in 
   List.for_all diff_list ~f:is_safe
 
+let list_without xs i =
+  let (before, after) = List.split_n xs i in
+  List.concat [before; (List.tl_exn after)]
+
+let is_safe_with_tolerance report =
+  if is_safe report then true
+  else
+    List.range 0 (List.length report) |> List.exists ~f:(list_without report >> is_safe)
+
 let part_a () =
   let reports = read_reports () in
   List.count reports ~f:is_safe
 
-let part_b () = 0
+let part_b () =
+  let reports = read_reports () in
+  List.count reports ~f:is_safe_with_tolerance
