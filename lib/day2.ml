@@ -8,8 +8,8 @@ let parse_reports: string -> int list =
   >> List.map ~f:(Int.of_string)
 
 
-let read_reports (): int list list = 
-  In_channel.read_lines "inputs/day2.txt" |> List.map ~f:parse_reports
+let read_reports filename: int list list = 
+  In_channel.read_lines filename |> List.map ~f:parse_reports
 
 let sign n = Int.compare n 0
 
@@ -33,10 +33,10 @@ let is_safe_with_tolerance report =
   else
     List.range 0 (List.length report) |> List.exists ~f:(list_without report >> is_safe)
 
-let part_a () =
-  let reports = read_reports () in
+let part_a filename =
+  let reports = read_reports filename in
   List.count reports ~f:is_safe
 
-let part_b () =
-  let reports = read_reports () in
+let part_b filename =
+  let reports = read_reports filename in
   List.count reports ~f:is_safe_with_tolerance
