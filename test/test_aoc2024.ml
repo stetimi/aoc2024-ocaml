@@ -6,5 +6,6 @@ let () =
       Test_day1.day1_tests;
       Test_day2.day2_tests;
       Test_day3.day3_tests;
+      Test_day4.day4_tests;
     ]
   )
