@@ -5,7 +5,7 @@ description: "A longer description"
 maintainer: ["Maintainer Name <maintainer@example.com>"]
 authors: ["Author Name <author@example.com>"]
 license: "LICENSE"
-tags: ["add topics" "to describe" "your" "project"]
+tags: ["advent of code" "ocaml"]
 homepage: "https://github.com/username/reponame"
 doc: "https://url/to/documentation"
 bug-reports: "https://github.com/username/reponame/issues"
