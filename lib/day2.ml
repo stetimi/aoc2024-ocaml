@@ -1,6 +1,5 @@
 open Core
-
-let (>>) f g x = g (f x)
+open Utils
 
 let parse_reports: string -> int list =
   String.split_on_chars ~on:[' '] 
