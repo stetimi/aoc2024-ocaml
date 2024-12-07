@@ -21,8 +21,11 @@ let gather (points: (int * int) array) (default: 'a) (grid: 'a t): 'a array =
       else default in
   Array.map points ~f:at_1
 
-let points (x, y) (dx, dy) (len: int): 'a array =
+let points (x, y) (dx, dy) (len: int): (int * int) array =
   Array.init len ~f:(fun i -> (x + dx * i, y + dy * i))
+
+let apply_offsets (x, y) (offsets: (int * int) array): (int * int) array =
+  Array.map offsets ~f:(fun (dx, dy) -> (x+dx, y+dy))
 
 let to_xy (p: int) (grid: _ t): (int * int) = 
   (p % grid.cols, p / grid.cols)
@@ -31,4 +34,9 @@ let sum ~(f: (int * int) -> int) (g: 'a t): int =
   let len = Array.length g.cells in
   let ps = Sequence.range 0 len in
   Sequence.sum (module Int) ps ~f:(fun p -> f (to_xy p g))
+
+let count ~(f: (int * int) -> bool) (g: 'a t): int =
+  let len = Array.length g.cells in
+  let ps = Sequence.range 0 len in
+  Sequence.count ps ~f:(fun p -> f (to_xy p g))
   

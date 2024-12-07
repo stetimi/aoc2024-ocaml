@@ -1,7 +1,6 @@
 open OUnit2
 open Aoc2024
-
-let assert_int_equals = assert_equal ~printer: Int.to_string 
+open Assertions
 
 let day3_tests = "day 3 test suite" >::: [
   "part a on string containing one mul()" >:: (fun _ -> assert_int_equals 2520 (Day3.part_a_sum_muls "there is mul(45,56) here"));

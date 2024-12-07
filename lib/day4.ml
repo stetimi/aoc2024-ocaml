@@ -6,24 +6,25 @@ let read_grid (filename: string): char Grid.t =
   let cols = List.hd_exn cells |> Array.length in
   Grid.init cols (Array.concat cells)
 
-let re_xmas = Re.(str "XMAS" |> compile) 
-
-let re_samx = Re.(str "SAMX" |> compile) 
-
-let count_xmas_matches (cs: char array): int = 
-  let s = String.of_array cs in
-  let count re =  Re.all re s |> List.length in
-  count re_xmas + count re_samx
-
-let xmas_matches_at_point (g: char Grid.t) (xy: int * int): int = 
-  let count delta = (
+let count_xmas_matches_at (g: char Grid.t) (xy: int * int): int = 
+  let xmas = "XMAS" |> String.to_array in
+  let matches delta = (
     let points = Grid.points xy delta 4 in
-    let word = Grid.gather points '*' g |> String.of_array in
-    if String.equal word "XMAS" then 1 else 0) in
-  Grid.directions |> List.sum (module Int) ~f:count
+    let word = Grid.gather points '*' g in
+    Array.equal Char.equal word xmas) in
+  Grid.directions |> List.count ~f:matches
 
+let cross_mas_matches_at (g: char Grid.t) (xy: int * int): bool = 
+  let xmases = ["SSAMM"; "MSAMS"; "SMASM"; "MMASS"] |> Set.of_list (module String) in
+  let offsets = [|(-1, -1); (1, -1); (0, 0); (-1, 1); (1, 1)|] in
+  let points = Grid.apply_offsets xy offsets in
+  let word = Grid.gather points '*' g |> String.of_array in
+  Set.mem xmases word
+  
 let part_a filename = 
   let grid = read_grid filename in
-  Grid.sum ~f:(xmas_matches_at_point grid) grid
+  Grid.sum ~f:(count_xmas_matches_at grid) grid
   
-let part_b _filename = 0
+let part_b filename = 
+  let grid = read_grid filename in
+  Grid.count ~f:(cross_mas_matches_at grid) grid
