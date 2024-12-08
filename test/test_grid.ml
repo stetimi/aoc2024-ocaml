@@ -7,7 +7,7 @@ let g = Grid.init 5 (Array.init 20 ~f:Fn.id)
 
 let int_pair_equal = Tuple2.equal ~eq1:Int.equal ~eq2:Int.equal
 
-let int_pair_to_string (x,y) = sprintf "(%d,%d)" x y
+let int_pair_to_string (x,y) = [%string "(%{x#Int},%{y#Int})"]
 
 let assert_int_pair_equal expected actual  =
   assert_equal expected actual ~cmp:int_pair_equal ~printer:int_pair_to_string
