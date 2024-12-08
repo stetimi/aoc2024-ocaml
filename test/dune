@@ -1,5 +1,7 @@
 (test
  (name test_aoc2024)
  (libraries aoc2024 ounit2)
+ (preprocess
+  (pps ppx_string))
  (deps (glob_files ./test_inputs/*.txt))
  )
