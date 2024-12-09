@@ -12,4 +12,5 @@ let () =
   print_result 4 Day4.part_a Day4.part_b;
   print_result 5 Day5.part_a Day5.part_b;
   (* print_result 6 Day6.part_a Day6.part_b; *)
-  print_result 7 Day7.part_a Day7.part_b;
+  print_result 7 Day7.part_a Day7.part_b;  
+  print_result 8 Day8.part_a Day8.part_b;
