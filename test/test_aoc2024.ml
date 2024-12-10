@@ -11,6 +11,7 @@ let () =
       Test_day6.day6_tests;
       Test_day7.day7_tests;
       Test_day8.day8_tests;
+      Test_day9.day9_tests;
       Test_grid.grid_tests;
     ]
   )
