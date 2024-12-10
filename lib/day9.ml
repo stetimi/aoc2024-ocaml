@@ -1,3 +1,4 @@
+open Containers
 open Core
 
 type file = {id: int; length: int} [@@deriving show]
@@ -10,14 +11,19 @@ type disk_sector =
 type disk = disk_sector list
 [@@deriving show]
 
-let to_disk_rev (s: string): disk =
+module IntIntHeap = CCHeap.Make(struct 
+  type t = (int * int) 
+  let leq = fun x y -> Tuple2.compare x y ~cmp1:Int.compare ~cmp2:Int.compare > 0 
+end)
+
+let to_disk_rev (s: string): disk * IntIntHeap.t =
   String.to_array s
-  |> Array.foldi ~init:[] ~f:(fun i disk ch ->
+  |> Array.foldi ~init:([], IntIntHeap.empty) ~f:(fun i (disk,spaces) ch ->
     let length = (Char.to_int ch) - 48 in
-    let sector = if Int.rem i 2 = 0
-      then let id = i / 2 in File {id; length}
-      else Space length in
-    sector::disk
+    let sector, spaces = if Int.rem i 2 = 0
+      then let id = i / 2 in File {id; length}, spaces
+      else let space = Space length in space, IntIntHeap.add spaces (length, i) in
+    sector::disk, spaces
   )
 
 let to_array disk_rev =
@@ -67,7 +73,7 @@ let stringify = function
 
 let part_a filename = 
   let disk_map = In_channel.read_all filename in
-  let disk = to_disk_rev disk_map |> to_array in
+  let disk = to_disk_rev disk_map |> fst |> to_array in
   defragment_fully disk;
   checksum disk
 
