@@ -21,18 +21,7 @@ let assert_array_equal (expected: 'a array) (actual: 'a array) ~(cmp:'a -> 'a ->
   let expected_actual = Array.zip_exn expected actual in 
   Array.iteri expected_actual ~f:(fun i (e, a) -> assert_equal e a ~cmp ~printer:(fun x -> [%string "%{i#Int}: %{printer x}"]))
 
-let set_printer (elt_printer: 'a -> string) s: string =
-  let contents = Set.to_list s 
-  |> List.map ~f:elt_printer
-  |> String.concat ~sep:"," in
-  [%string "(%{contents})"]
+let int_pair_equal = Tuple2.equal ~eq1:Int.equal ~eq2:Int.equal
 
-let map_printer (k_printer: 'k -> string) (v_printer: 'v -> string) m: string =
-  Map.to_alist m
-  |> List.map ~f:(fun (k, v) -> [%string "(%{k_printer k}->%{v_printer v})"])
-  |> String.concat ~sep:","
-
-  let int_pair_equal = Tuple2.equal ~eq1:Int.equal ~eq2:Int.equal
-
-  let int_pair_printer (x,y) = [%string "(%{x#Int},%{y#Int})"]
+let int_pair_printer (x,y) = [%string "(%{x#Int},%{y#Int})"]
   
