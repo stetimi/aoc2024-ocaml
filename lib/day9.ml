@@ -8,26 +8,27 @@ type disk_sector =
 | Space of int
 [@@deriving show]
 
-type disk = disk_sector list
-[@@deriving show]
+type disk = disk_sector Deque.t
 
 module IntIntHeap = CCHeap.Make(struct 
   type t = (int * int) 
   let leq = fun x y -> Tuple2.compare x y ~cmp1:Int.compare ~cmp2:Int.compare > 0 
 end)
 
-let to_disk_rev (s: string): disk * IntIntHeap.t =
-  String.to_array s
-  |> Array.foldi ~init:([], IntIntHeap.empty) ~f:(fun i (disk,spaces) ch ->
+let to_disk (s: string): disk * IntIntHeap.t =
+  let disk = Deque.create () in
+  let spaces = String.to_array s
+  |> Array.foldi ~init:IntIntHeap.empty ~f:(fun i spaces ch ->
     let length = (Char.to_int ch) - 48 in
     let sector, spaces = if Int.rem i 2 = 0
       then let id = i / 2 in File {id; length}, spaces
       else let space = Space length in space, IntIntHeap.add spaces (length, i) in
-    sector::disk, spaces
-  )
+    Deque.enqueue_back disk sector;
+    spaces
+  ) in
+  disk, spaces
 
-let to_array disk_rev =
-  let disk = List.rev disk_rev in
+let to_array disk =
   let disk_array = Array.init 250_000 ~f:(Fun.const (-1)) in
   let head = ref 0 in
   let copy value length = (
@@ -36,7 +37,7 @@ let to_array disk_rev =
     done;
     head := !head + length
   ) in
-  List.iter disk ~f:(function
+  Deque.iter disk ~f:(function
   | Space length -> copy (-1) length
   | File {id; length} -> copy id length
   );
@@ -73,7 +74,7 @@ let stringify = function
 
 let part_a filename = 
   let disk_map = In_channel.read_all filename in
-  let disk = to_disk_rev disk_map |> fst |> to_array in
+  let disk = to_disk disk_map |> fst |> to_array in
   defragment_fully disk;
   checksum disk
 
