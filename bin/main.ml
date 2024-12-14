@@ -1,6 +1,6 @@
 open Core
 open Aoc2024
-open Utils
+open Tools
 
 let time_ns = Time_ns.now >> Time_ns.to_int_ns_since_epoch
 
@@ -33,4 +33,5 @@ let () =
   print_result 7 Day7.part_a Day7.part_b;  
   print_result 8 Day8.part_a Day8.part_b;
   print_result 9 Day9.part_a Day9.part_b;
+  print_result 13 Day13.part_a Day13.part_b;
   print_endline [%string "Total time taken was %{!time_taken#Int}ms"]

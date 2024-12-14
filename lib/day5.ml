@@ -1,5 +1,5 @@
 open Core
-open Utils
+open Tools
 
 type ordering_rule = {before: int; after: int}
 type update = int list

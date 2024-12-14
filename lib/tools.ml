@@ -15,3 +15,10 @@ let map_printer (k_printer: 'k -> string) (v_printer: 'v -> string) m: string =
 
 let list_printer (elt_printer: 'a -> string) (xs: 'a list) =
   String.concat ~sep:";" @@ List.map xs ~f:elt_printer
+
+let list_split_all xs ~f =
+  let rec go xs acc = (
+    match List.split_while xs ~f with
+    | first, [] -> first :: acc
+    | first, _ :: rest -> go rest (first :: acc)
+  ) in go xs [] |> List.rev

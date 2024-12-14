@@ -13,7 +13,7 @@ type disk = disk_sector list
 type space_ptr = {index: int; length: int}
 
 let print_spaces spaces =
-  print_endline @@  Utils.map_printer Int.to_string (Utils.list_printer @@ Int.to_string) spaces
+  print_endline @@  Tools.map_printer Int.to_string (Tools.list_printer @@ Int.to_string) spaces
 
 let print_disk_byte = function
 | (-1) -> "."

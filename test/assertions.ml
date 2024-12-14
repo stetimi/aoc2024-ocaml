@@ -3,6 +3,7 @@ open OUnit2
 
 let assert_int_equals = assert_equal ~printer:Int.to_string ~cmp:(=)
 
+let assert_float_equals = assert_equal ~printer:Float.to_string ~cmp:Float.(=)
 
 let assert_list_equals (expected: 'a list) (actual: 'a list) ~(cmp:'a -> 'a -> bool) ~(printer: 'a -> string) =
   assert_int_equals (List.length expected) (List.length actual) ~msg:"Lengths differ";
@@ -24,4 +25,10 @@ let assert_array_equal (expected: 'a array) (actual: 'a array) ~(cmp:'a -> 'a ->
 let int_pair_equal = Tuple2.equal ~eq1:Int.equal ~eq2:Int.equal
 
 let int_pair_printer (x,y) = [%string "(%{x#Int},%{y#Int})"]
-  
+
+let list_printer ~printer xs =
+  String.concat ~sep:";" @@ List.map xs ~f:printer
+
+let float_pair_equal = Tuple2.equal ~eq1:Float.equal ~eq2:Float.equal
+
+let float_pair_printer (x,y) = [%string "(%{x#Float},%{y#Float})"]
