@@ -2,6 +2,7 @@ open Core
 open OUnit2
 open Aoc2024  
 open Assertions
+open Tools
 
 let g = Grid.init 5 (Array.init 20 ~f:Fn.id)
 

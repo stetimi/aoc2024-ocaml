@@ -24,8 +24,6 @@ let assert_array_equal (expected: 'a array) (actual: 'a array) ~(cmp:'a -> 'a ->
 
 let int_pair_equal = Tuple2.equal ~eq1:Int.equal ~eq2:Int.equal
 
-let int_pair_printer (x,y) = [%string "(%{x#Int},%{y#Int})"]
-
 let list_printer ~printer xs =
   String.concat ~sep:";" @@ List.map xs ~f:printer
 

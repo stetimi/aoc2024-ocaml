@@ -22,3 +22,6 @@ let list_split_all xs ~f =
     | first, [] -> first :: acc
     | first, _ :: rest -> go rest (first :: acc)
   ) in go xs [] |> List.rev
+
+let int_pair_printer (x,y) = [%string "(%{x#Int},%{y#Int})"]
+

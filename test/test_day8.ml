@@ -2,6 +2,7 @@ open Core
 open OUnit2
 open Aoc2024
 open Assertions
+open Tools
 
 let grid = Day8.read_map "test_inputs/day8.txt"
 
