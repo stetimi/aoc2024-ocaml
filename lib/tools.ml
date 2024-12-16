@@ -8,7 +8,7 @@ let set_printer (elt_printer: 'a -> string) s: string =
   |> String.concat ~sep:"," in
   [%string "(%{contents})"]
 
-let map_printer (k_printer: 'k -> string) (v_printer: 'v -> string) m: string =
+let map_printer (k_printer: 'k -> string) (v_printer: 'v -> string) (m: ('k, 'v, _) Map.t): string =
   Map.to_alist m
   |> List.map ~f:(fun (k, v) -> [%string "(%{k_printer k}->%{v_printer v})"])
   |> String.concat ~sep:","

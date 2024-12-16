@@ -34,5 +34,6 @@ let () =
   print_result 8 Day8.part_a Day8.part_b;
   print_result 9 Day9.part_a Day9.part_b;
   print_result 10 Day10.part_a Day10.part_b;
+  print_result 11 Day11.part_a Day11.part_b;
   print_result 13 Day13.part_a Day13.part_b;
   print_endline [%string "Total time taken was %{!time_taken#Int}ms"]

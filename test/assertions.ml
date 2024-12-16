@@ -27,6 +27,8 @@ let int_pair_equal = Tuple2.equal ~eq1:Int.equal ~eq2:Int.equal
 let list_printer ~printer xs =
   String.concat ~sep:";" @@ List.map xs ~f:printer
 
+let to_eq cmp x y = cmp x y = 0
+
 let float_pair_equal = Tuple2.equal ~eq1:Float.equal ~eq2:Float.equal
 
 let float_pair_printer (x,y) = [%string "(%{x#Float},%{y#Float})"]
