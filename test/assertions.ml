@@ -5,6 +5,8 @@ let assert_int_equals = assert_equal ~printer:Int.to_string ~cmp:(=)
 
 let assert_float_equals = assert_equal ~printer:Float.to_string ~cmp:Float.(=)
 
+let assert_string_equals = assert_equal  ~cmp:String.(=) ~printer:Fn.id
+
 let assert_list_equals (expected: 'a list) (actual: 'a list) ~(cmp:'a -> 'a -> bool) ~(printer: 'a -> string) =
   assert_int_equals (List.length expected) (List.length actual) ~msg:"Lengths differ";
   let expected_actual = List.zip_exn expected actual in 

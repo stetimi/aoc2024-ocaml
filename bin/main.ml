@@ -10,11 +10,11 @@ let timed_millis f input =
   let finish = time_ns () in
   result, (finish - start) / 1_000_000
 
-let print_result (k: int -> unit) (day: int) first second =
+let print_result (k: int -> unit) (day: int) ~(printer: 'a -> string) first second =
   let input = [%string "inputs/day%{day#Int}.txt"] in
   let first_result, first_millis = timed_millis first input in
   let second_result, second_millis = timed_millis second input in
-  print_endline [%string "Day %{day#Int}: part A: %{first_result#Int} [%{first_millis#Int}ms], part B: %{second_result#Int} [%{second_millis#Int}ms]"];
+  print_endline [%string "Day %{day#Int}: part A: %{printer first_result} [%{first_millis#Int}ms], part B: %{printer second_result} [%{second_millis#Int}ms]"];
   let _ = k @@ first_millis + second_millis in
   ()
 
@@ -23,7 +23,8 @@ let total_time (time_taken: int ref) (t: int) =
 
 let () = 
   let time_taken = ref 0 in
-  let print_result = print_result @@ total_time time_taken in
+  let print_string_result = print_result ~printer:Fn.id @@ total_time time_taken in
+  let print_result = print_result ~printer:Int.to_string @@ total_time time_taken in
   print_result 1 Day1.part_a Day1.part_b;
   print_result 2 Day2.part_a Day2.part_b;
   print_result 3 Day3.part_a Day3.part_b;  
@@ -36,4 +37,5 @@ let () =
   print_result 10 Day10.part_a Day10.part_b;
   print_result 11 Day11.part_a Day11.part_b;
   print_result 13 Day13.part_a Day13.part_b;
+  print_string_result 17 Day17.part_a Day17.part_b;
   print_endline [%string "Total time taken was %{!time_taken#Int}ms"]
