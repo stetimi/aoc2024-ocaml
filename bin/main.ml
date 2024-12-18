@@ -38,6 +38,7 @@ let () =
   print_result 9 Day9.part_a Day9.part_b;
   print_result 10 Day10.part_a Day10.part_b;
   print_result 11 Day11.part_a Day11.part_b;
+  print_result 12 Day12.part_a Day12.part_b;
   print_result 13 Day13.part_a Day13.part_b;
   print_result 14 (Day14.part_a (101, 103)) (ignore 0);
   print_string_result 17 Day17.part_a Day17.part_b;
