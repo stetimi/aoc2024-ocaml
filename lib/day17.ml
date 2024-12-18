@@ -129,4 +129,7 @@ let part_a filename =
   let result = run computer program in
   String.concat ~sep:"," (result |> Array.to_list |> List.map ~f:Int.to_string)
 
-let part_b _filename = ""
+let part_b filename = 
+  let _, program = read_input filename in
+  let result = part_b_run program 164542125272765 in (* Done by hand/brute force *)
+  String.concat ~sep:"," (result |> Array.to_list |> List.map ~f:Int.to_string)

@@ -21,6 +21,8 @@ let print_result (k: int -> unit) (day: int) ~(printer: 'a -> string) first seco
 let total_time (time_taken: int ref) (t: int) = 
   time_taken := !time_taken + t
 
+let ignore = Fn.const
+
 let () = 
   let time_taken = ref 0 in
   let print_string_result = print_result ~printer:Fn.id @@ total_time time_taken in
@@ -37,5 +39,6 @@ let () =
   print_result 10 Day10.part_a Day10.part_b;
   print_result 11 Day11.part_a Day11.part_b;
   print_result 13 Day13.part_a Day13.part_b;
+  print_result 14 (Day14.part_a (101, 103)) (ignore 0);
   print_string_result 17 Day17.part_a Day17.part_b;
   print_endline [%string "Total time taken was %{!time_taken#Int}ms"]

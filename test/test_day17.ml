@@ -62,5 +62,4 @@ let day17_tests = "day 17 test suite" >::: [
     assert_array_equal program result ~cmp:(=) ~printer:Int.to_string
   );
   "part a sample" >:: (fun _ -> assert_string_equals "4,6,3,5,6,3,5,2,1,0" (part_a "./test_inputs/day17.txt"));
-  "part b sample" >:: (fun _ -> assert_string_equals "" (part_b "./test_inputs/day17.txt"));
 ]

@@ -1,6 +1,8 @@
 open Core
 open OUnit2
 
+let assert_cmp_equal expected actual ~cmp ~printer = assert_equal expected actual ~cmp:(fun e a -> cmp e a = 0) ~printer
+
 let assert_int_equals = assert_equal ~printer:Int.to_string ~cmp:(=)
 
 let assert_float_equals = assert_equal ~printer:Float.to_string ~cmp:Float.(=)

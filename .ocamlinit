@@ -1,0 +1,2 @@
+open Core;;
+open Aoc2024__Day14;;
