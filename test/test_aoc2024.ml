@@ -14,6 +14,7 @@ let () =
       Test_day9.day9_tests;
       Test_day10.day10_tests;
       Test_day11.day11_tests;
+      Test_day12.day12_tests;
       Test_day13.day13_tests;
       Test_day14.day14_tests;
       Test_day17.day17_tests;
