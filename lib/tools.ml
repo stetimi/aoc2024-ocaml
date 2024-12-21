@@ -45,10 +45,20 @@ module IntTuple = struct
       0 -> Int.compare y0 y1
     | c -> c
 
+  let compare_x_first = compare
+  let compare_x_last t1 t2 = compare t1 t2 |> Int.neg
+  let compare_y_first (x0, y0) (x1, y1) = compare (y0, x0) (y1, x1)
+  let compare_y_last t1 t2 = compare_y_first t1 t2 |> Int.neg
+
   let t_of_sexp tuple = Tuple2.t_of_sexp Int.t_of_sexp Int.t_of_sexp tuple
   let sexp_of_t tuple = Tuple2.sexp_of_t Int.sexp_of_t Int.sexp_of_t tuple
   let hash (x,y) = Int.shift_left (Int.hash x) 16 + Int.hash y
 end
 
 module IntTupleSet = Set.Make(IntTuple)
+
+let show_grid (grid: 'a array array) ~(f: 'a -> char): string =
+  let show_row = Array.map ~f >> String.of_array in
+  let rows = Array.map grid ~f:show_row in
+  String.concat_array rows ~sep:"\n"
   
