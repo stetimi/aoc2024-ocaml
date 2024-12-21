@@ -2,7 +2,8 @@ open Core
 
 type cell =
 | Space
-| Box
+| BoxLeft
+| BoxRight
 | Robot
 | Wall
 [@@deriving ord, show]
@@ -22,11 +23,25 @@ let read_warehouse (lines: string list): warehouse =
     | '.' -> Space
     | '#' -> Wall
     | '@' -> Robot
-    | 'O' -> Box
+    | 'O' -> BoxLeft
     | ch -> failwith [%string "Bug: %{ch#Char}"]
   )) in
   lines
   |> List.map ~f:to_row
+  |> List.to_array
+
+let read_doubled_warehouse (lines: string list): warehouse =
+  let to_row s = (
+    String.to_list s |> List.map ~f:(function
+    | '.' -> [Space; Space]
+    | '#' -> [Wall; Wall]
+    | '@' -> [Robot; Space]
+    | 'O' -> [BoxLeft; BoxRight]
+    | ch -> failwith [%string "Bug: %{ch#Char}"]
+  )) in
+  lines
+  |> List.concat_map ~f:to_row
+  |> List.map ~f:List.to_array
   |> List.to_array
 
 let read_instructions (lines: string list): instruction list =
@@ -43,8 +58,6 @@ let read_instructions (lines: string list): instruction list =
 let read_input filename =
   let  [@warning "-8"] (warehouse, _ :: instructions) = In_channel.read_lines filename
   |> List.split_while ~f:(Fn.non String.is_empty) in
-  let warehouse = read_warehouse warehouse in
-  let instructions = read_instructions instructions in
   warehouse, instructions
 
 let find_cells warehouse (mover: cell): (int * int) array =
@@ -65,8 +78,8 @@ let rec move warehouse (mover: cell) (rx, ry) (instruction: instruction): pos =
       warehouse.(ry').(rx') <- mover;
       warehouse.(ry).(rx) <- Space;
       (rx', ry')
-  | Box ->
-      let (boxx', boxy') = move warehouse Box (rx',ry') instruction in
+  | BoxLeft | BoxRight as cell  ->
+      let (boxx', boxy') = move warehouse cell (rx',ry') instruction in
       if boxx' = rx' && boxy' = ry' 
         then (rx, ry)
         else (  
@@ -76,10 +89,20 @@ let rec move warehouse (mover: cell) (rx, ry) (instruction: instruction): pos =
         )
     
 let part_a filename = 
-  let (warehouse, instructions) = read_input filename in
+  let (warehouse, instructions) = read_input filename |> Tuple2.map_both ~f1:read_warehouse ~f2:read_instructions in
   let roboti = find_robot warehouse in
   let _ = List.fold_left instructions ~init:roboti ~f:(move warehouse Robot) in
-  let boxes = find_cells warehouse Box in
+  let boxes = find_cells warehouse BoxLeft in
   Array.sum (module Int) boxes ~f:(fun (x, y) -> 100 * y + x)
 
-let part_b _filename = 0
+let part_b filename = 
+  let (warehouse, instructions) = read_input filename |> Tuple2.map_both ~f1:read_doubled_warehouse ~f2:read_instructions in
+  let midpoint = Array.length warehouse.(0) / 2 in
+  let roboti = find_robot warehouse in
+  let _ = List.fold_left instructions ~init:roboti ~f:(move warehouse Robot) in
+  let box_lefts = find_cells warehouse BoxLeft
+  |> Array.filter ~f:(fun (x, _) -> x < midpoint) in
+  let box_rights = find_cells warehouse BoxLeft 
+  |> Array.filter ~f:(fun (x, _) -> x >= midpoint) in
+  let boxes = Array.concat [box_lefts; box_rights] in
+  Array.sum (module Int) boxes ~f:(fun (x, y) -> 100 * y + x)
