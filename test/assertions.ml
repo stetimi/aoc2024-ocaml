@@ -35,4 +35,9 @@ let to_eq cmp x y = cmp x y = 0
 
 let float_pair_equal = Tuple2.equal ~eq1:Float.equal ~eq2:Float.equal
 
-let float_pair_printer (x,y) = [%string "(%{x#Float},%{y#Float})"]
+let tuple_printer (a,b) ~(p1:'a -> string) ~(p2:'b -> string): string =
+  [%string "(%{p1 a},%{p2 b})"]
+
+let int_pair_printer = tuple_printer ~p1:Int.to_string ~p2:Int.to_string
+
+let float_pair_printer = tuple_printer ~p1:Float.to_string ~p2:Float.to_string
