@@ -25,6 +25,8 @@ let list_split_all xs ~f =
 
 let int_pair_printer (x,y) = [%string "(%{x#Int},%{y#Int})"]
 
+let int_pair_list_printer xys = String.concat ~sep:";" @@ List.map ~f:int_pair_printer xys
+
 let dfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
   let items = Stack.singleton init in
   let push_all = List.iter ~f:(Stack.push items) in
@@ -36,6 +38,30 @@ let dfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
         go @@ if is_target curr then curr :: found else found
       ) in
   go []
+
+let bfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
+  let items = Queue.singleton (init, []) in
+  let push_all = List.iter ~f:(Queue.enqueue items) in
+  let rec go () = (
+    match Queue.dequeue items with
+    | None -> []
+    | Some (item, path) ->
+      if is_target item
+          then path
+          else (
+            let nexts = next item in
+            let item_paths = List.map nexts ~f:(fun next -> next, next :: path) in
+            push_all item_paths;
+            go ()
+          )
+  ) in
+  go ()
+
+
+let track_seen (seen: 'a Hash_set.t) (next: 'a -> 'a list) (here: 'a): 'a list =
+  let next_values = next here |> List.filter ~f:(Fn.non @@ Hash_set.mem seen) in
+  List.iter next_values ~f:(Hash_set.add seen);
+  next_values
 
 module IntTuple = struct
   type t = int * int
@@ -61,4 +87,10 @@ let show_grid (grid: 'a array array) ~(f: 'a -> char): string =
   let show_row = Array.map ~f >> String.of_array in
   let rows = Array.map grid ~f:show_row in
   String.concat_array rows ~sep:"\n"
+
+let add_points (s,t) (x,y) = (s+x, t+y)
+
+let surroundings (max_x, max_y) (x,y) =
+  let include_point (x,y) = if x >= 0 && x < max_x && y >= 0 && y < max_y then Some (x,y) else None in
+  [0,-1;1,0;0,1;-1,0] |> List.filter_map ~f:(add_points (x,y) >> include_point)
   
