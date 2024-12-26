@@ -88,9 +88,74 @@ let show_grid (grid: 'a array array) ~(f: 'a -> char): string =
   let rows = Array.map grid ~f:show_row in
   String.concat_array rows ~sep:"\n"
 
+exception Found of int * int
+
+let find_in_grid (grid: 'a array array) ~(f: 'a -> bool): (int * int) option =
+  let width = Array.length grid.(0) in
+  let height = Array.length grid in
+  try
+    for y = 0 to (height - 1) do
+      for x = 0 to (width - 1) do
+        if f (grid.(y).(x))
+          then raise (Found (x,y))
+      done
+    done;
+    None
+  with Found (x,y) -> Some (x,y)
+
 let add_points (s,t) (x,y) = (s+x, t+y)
 
 let surroundings (max_x, max_y) (x,y) =
   let include_point (x,y) = if x >= 0 && x < max_x && y >= 0 && y < max_y then Some (x,y) else None in
   [0,-1;1,0;0,1;-1,0] |> List.filter_map ~f:(add_points (x,y) >> include_point)
+
+type direction = N | E | S | W
+[@@deriving ord, show]
+
+let to_point = function N -> 0,1 | E -> 1,0 | S -> 0,-1 | W -> -1,0
+
+let turn_right = function N -> E | E -> S | S -> W | W -> N
+
+let turn_left = function N -> W | W -> S | S -> E | E -> N
+
+let add_direction p d = add_points p @@ to_point d
+
+let grid_at (grid: 'a array array) (x, y): 'a option =
+  Option.some_if (x >= 0 && y >= 0 && y < (Array.length grid) && x < (Array.length grid.(0))) grid.(y).(x)
+
+let mk_iter (next: 'v -> 'v list) =
+  let iter v = (
+    let stack = Stack.singleton v in
+    let f k = match Stack.pop stack with 
+    | None -> ()
+    | Some v ->
+        let nexts = next v in
+        List.iter nexts ~f:(Stack.push stack);
+        let e = v, v in
+        k (e, v) in
+    f
+  ) in
+  iter
+
+let dijkstra grid_at n s e = 
+  let dist = Array.init n ~f:(Fn.const Int.max_value) in
+  let q = ref IntTupleSet.(singleton (0,s)) in
+  dist.(s) <- 0;
+  while not (Set.is_empty !q) do
+    let (d, u) = Set.min_elt_exn !q in
+    q := Set.remove !q (d, u);
+    List.iter
+      ~f:(fun (v, w) -> 
+        let newdist = dist.(u) + w in
+        if newdist < dist.(v) then
+        begin
+          q := Set.add !q (newdist, v);
+          dist.(v) <- newdist
+        end
+      )
+      grid_at u
+  done;
+  dist.(e)
+    
+
   
