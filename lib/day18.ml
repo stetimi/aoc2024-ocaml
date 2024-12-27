@@ -14,7 +14,7 @@ let path_length size (corrupt_coords: IntTupleSet.t) =
   let next pos = 
     surroundings (size, size) pos
     |> List.filter ~f:(Fn.non @@ Set.mem corrupt_coords) in
-  let next = track_seen (Hash_set.create (module IntTuple)) next in
+  let next = track_seen ~f:Fn.id (Hash_set.create (module IntTuple)) next in
   let path = bfs
     ~init: (0,0)
     ~next

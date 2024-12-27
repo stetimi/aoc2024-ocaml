@@ -21,7 +21,7 @@ let tools_tests = "tools test suite" >::: [
     | 0 -> [10; 11]
     | 10 -> [11; 12]
     | _ -> failwith "") in
-    let next = track_seen (Hash_set.create (module Int)) next in
+    let next = track_seen ~f:Fn.id (Hash_set.create (module Int)) next in
     assert_list_equals [10; 11] (next 0) ~cmp:(=) ~printer:(Int.to_string);
     assert_list_equals [12] (next 10) ~cmp:(=) ~printer:(Int.to_string);
     assert_list_equals [] (next 0) ~cmp:(=) ~printer:(Int.to_string);

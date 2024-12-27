@@ -30,7 +30,7 @@ let int_pair_list_printer xys = String.concat ~sep:";" @@ List.map ~f:int_pair_p
 let dfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
   let items = Stack.singleton init in
   let push_all = List.iter ~f:(Stack.push items) in
-  let rec go found =
+  let rec go (found: 'a list): 'a list =
     Option.value_map (Stack.pop items)
       ~default:found
       ~f:(fun curr ->
@@ -38,7 +38,7 @@ let dfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
         go @@ if is_target curr then curr :: found else found
       ) in
   go []
-
+  
 let bfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
   let items = Queue.singleton (init, []) in
   let push_all = List.iter ~f:(Queue.enqueue items) in
@@ -58,9 +58,9 @@ let bfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
   go ()
 
 
-let track_seen (seen: 'a Hash_set.t) (next: 'a -> 'a list) (here: 'a): 'a list =
-  let next_values = next here |> List.filter ~f:(Fn.non @@ Hash_set.mem seen) in
-  List.iter next_values ~f:(Hash_set.add seen);
+let track_seen ~(f: 'a -> 'b) (seen: 'b Hash_set.t) (next: 'a -> 'a list) (here: 'a): 'a list =
+  let next_values = next here |> List.filter ~f:(fun n -> not @@ Hash_set.mem seen (f n)) in
+  List.iter next_values ~f:(fun n -> Hash_set.add seen (f n));
   next_values
 
 module IntTuple = struct
@@ -75,6 +75,8 @@ module IntTuple = struct
   let compare_x_last t1 t2 = compare t1 t2 |> Int.neg
   let compare_y_first (x0, y0) (x1, y1) = compare (y0, x0) (y1, x1)
   let compare_y_last t1 t2 = compare_y_first t1 t2 |> Int.neg
+  
+  let (=) t1 t2 = compare t1 t2 = 0
 
   let t_of_sexp tuple = Tuple2.t_of_sexp Int.t_of_sexp Int.t_of_sexp tuple
   let sexp_of_t tuple = Tuple2.sexp_of_t Int.sexp_of_t Int.sexp_of_t tuple
@@ -82,6 +84,8 @@ module IntTuple = struct
 end
 
 module IntTupleSet = Set.Make(IntTuple)
+
+module IntTupleMap = Map.Make(IntTuple)
 
 let show_grid (grid: 'a array array) ~(f: 'a -> char): string =
   let show_row = Array.map ~f >> String.of_array in
@@ -105,9 +109,14 @@ let find_in_grid (grid: 'a array array) ~(f: 'a -> bool): (int * int) option =
 
 let add_points (s,t) (x,y) = (s+x, t+y)
 
+let compass_points = [0,-1;1,0;0,1;-1,0]
+
+let include_point (max_x, max_y) (x,y) = if x >= 0 && x < max_x && y >= 0 && y < max_y then Some (x,y) else None
+
 let surroundings (max_x, max_y) (x,y) =
-  let include_point (x,y) = if x >= 0 && x < max_x && y >= 0 && y < max_y then Some (x,y) else None in
-  [0,-1;1,0;0,1;-1,0] |> List.filter_map ~f:(add_points (x,y) >> include_point)
+  compass_points |> List.filter_map ~f:(add_points (x,y) >> include_point (max_x, max_y))
+
+let scale factor (x,y) = x*factor, y*factor
 
 type direction = N | E | S | W
 [@@deriving ord, show]
@@ -122,6 +131,11 @@ let add_direction p d = add_points p @@ to_point d
 
 let grid_at (grid: 'a array array) (x, y): 'a option =
   Option.some_if (x >= 0 && y >= 0 && y < (Array.length grid) && x < (Array.length grid.(0))) grid.(y).(x)
+
+let dimensions (grid: _ array array): int * int =
+  let height = Array.length grid in
+  let width = Array.length grid.(0) in
+  width, height
 
 let mk_iter (next: 'v -> 'v list) =
   let iter v = (
@@ -203,3 +217,17 @@ let binary_chop
       | _ -> search low (mid - 1) in
   search low high
   
+exception NotSingle
+
+let single_exn = function
+| [x] -> x
+| _ -> raise NotSingle
+
+let manhattan_dist (x0,y0) (x1,y1) =
+  Int.abs (x0-x1) + Int.abs(y0-y1)
+
+let array_range (from: int) (to_excl: int): int array = 
+  Array.init (to_excl - from) ~f:(fun n -> from + n)
+
+let zip_arrays_len l xs ys =
+  Array.init l ~f:(fun n -> (xs.(n), ys.(n)))
