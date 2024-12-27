@@ -26,15 +26,15 @@ let next_vertices maze (from_vertex: vertex): vertex list =
     to_list from_pos @@ turn_right from_direction;
   ]
 
-let part_a filename = 
-  let maze = read_maze filename in
+let part_a _filename = 
+  (* let maze = read_maze filename in
   let _start = find_in_grid maze ~f:(fun ch -> Char.(ch = 'S')) in
   let _end = find_in_grid maze ~f:(fun ch -> Char.(ch = 'E')) in
   let graph_iter = mk_iter (next_vertices maze) in
   let graph = CCGraph.make graph_iter in
   let table: vertex CCGraph.set = failwith "" in (* CCGraph.mk_map ~cmp:Int.compare () in *)
   let dist: edge -> int = failwith " " in
-  let _v_iter = CCGraph.Traverse.dijkstra ~graph ~tbl:table ~dist in
+  let _v_iter = CCGraph.Traverse.dijkstra ~graph ~tbl:table ~dist in *)
   0
 
 let part_b _filename = 0

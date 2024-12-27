@@ -1,2 +1,3 @@
 open Core;;
-open Aoc2024__Day12;;
+open Aoc2024__Tools;;
+open Aoc2024__Day19;;

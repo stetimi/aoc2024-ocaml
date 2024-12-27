@@ -137,7 +137,8 @@ let mk_iter (next: 'v -> 'v list) =
   ) in
   iter
 
-let dijkstra grid_at n s e = 
+let dijkstra g s e = 
+  let n = Array.length g in
   let dist = Array.init n ~f:(Fn.const Int.max_value) in
   let q = ref IntTupleSet.(singleton (0,s)) in
   dist.(s) <- 0;
@@ -153,9 +154,52 @@ let dijkstra grid_at n s e =
           dist.(v) <- newdist
         end
       )
-      grid_at u
+      g.(u)
   done;
   dist.(e)
     
+let prefixes (xs: 'a list): 'a list list =
+  let rec go (acc: 'a list list) = (function
+  | [] -> acc
+  | x :: xs when List.is_empty acc -> go [[x]] xs
+  | x :: xs -> go ((x :: List.hd_exn acc) :: acc) xs
+  ) in 
+  go [] xs |> List.rev_map ~f:List.rev
 
+let splits (xs: 'a list): ('a list * 'a list) list =
+  let rec go (acc: ('a list * 'a list) list) = (function
+  | [] -> acc
+  | x :: xs when List.is_empty acc -> go [[x], xs] xs
+  | x :: xs -> go ((x::(fst @@ List.hd_exn acc), xs) :: acc) xs
+  ) in 
+  go [] xs |> List.rev_map ~f:(fun (before,after) -> (List.rev before, after))
+  
+let memoize m f =
+  let cache = Hashtbl.create m in
+  let rec g key =
+    match Hashtbl.find cache key with
+    | None ->
+        let value = f g key in
+        Hashtbl.add_exn cache ~key ~data:value;
+        value
+    | Some value -> value in
+  g
+
+let binary_chop 
+    ~(f: int -> 'a) 
+    ~(cmp: 'a -> 'a -> int) 
+    ~(target: 'a) 
+    ~(low: int)
+    ~(high: int): int option =
+  let rec search low high =
+    if low > high 
+      then None
+    else 
+      let mid = low + (high - low) / 2 in
+      let value = f mid in
+      match cmp value target with
+      | 0 -> Some mid
+      | x when x < 0 -> search (mid + 1) high
+      | _ -> search low (mid - 1) in
+  search low high
   

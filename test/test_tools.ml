@@ -26,6 +26,13 @@ let tools_tests = "tools test suite" >::: [
     assert_list_equals [12] (next 10) ~cmp:(=) ~printer:(Int.to_string);
     assert_list_equals [] (next 0) ~cmp:(=) ~printer:(Int.to_string);
   );
+  "binary_chop" >:: (fun _ ->
+    let f n = [|1; 3; 5; 7; 9|].(n) in
+    let binary_chop = binary_chop ~f ~cmp:Int.compare ~low:0 ~high:4 in
+    assert_equal None (binary_chop ~target:4);
+    assert_equal (Some 1) (binary_chop ~target:3);
+    assert_equal (Some 4) (binary_chop ~target:9);
+  );
 ]
 
 
