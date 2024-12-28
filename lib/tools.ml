@@ -231,3 +231,13 @@ let array_range (from: int) (to_excl: int): int array =
 
 let zip_arrays_len l xs ys =
   Array.init l ~f:(fun n -> (xs.(n), ys.(n)))
+
+let frequency_map (m: ('a, 'b) Comparator.Module.t) (xs: 'a list): ('a, int, 'b) Map_intf.Map.t =
+  List.fold_left xs ~init:(Map.empty m) ~f:(fun m x -> 
+    Map.update m x ~f:(function
+    | None -> 1
+    | Some count -> succ count
+    )
+  )
+
+let on f c x y = c (f x) (f y)
