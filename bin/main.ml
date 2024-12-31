@@ -27,26 +27,27 @@ let () =
   let time_taken = ref 0 in
   let print_string_result = print_result ~printer:Fn.id @@ total_time time_taken in
   let print_result = print_result ~printer:Int.to_string @@ total_time time_taken in
-  print_result 1 Day1.part_a Day1.part_b;
-  print_result 2 Day2.part_a Day2.part_b;
-  print_result 3 Day3.part_a Day3.part_b;  
-  print_result 4 Day4.part_a Day4.part_b;
-  print_result 5 Day5.part_a Day5.part_b;
-  print_result 6 Day6.part_a Day6.part_b;
-  print_result 7 Day7.part_a Day7.part_b;  
-  print_result 8 Day8.part_a Day8.part_b;
-  print_result 9 Day9.part_a Day9.part_b;
-  print_result 10 Day10.part_a Day10.part_b;
-  print_result 11 Day11.part_a Day11.part_b;
-  print_result 12 Day12.part_a Day12.part_b;
-  print_result 13 Day13.part_a Day13.part_b;
-  print_result 14 (Day14.part_a (101, 103)) (ignore 0);
-  print_result 15 Day15.part_a Day15.part_b;
-  print_result 16 Day16.part_a Day16.part_b;
-  print_string_result 17 Day17.part_a Day17.part_b;
-  print_string_result 18 (Day18.part_a >> Int.to_string) Day18.part_b;
-  print_result 19 Day19.part_a Day19.part_b;
-  print_result 20 (Day20.part_a 100) (Day20.part_b 100);
-  print_result 21 Day21.part_a Day21.part_b;
-  print_result 22 Day22.part_a Day22.part_b;
+  Day1.(print_result 1 part_a part_b);
+  Day2.(print_result 2 part_a part_b);
+  Day3.(print_result 3 part_a part_b);  
+  Day4.(print_result 4 part_a part_b);
+  Day5.(print_result 5 part_a part_b);
+  Day6.(print_result 6 part_a part_b);
+  Day7.(print_result 7 part_a part_b);  
+  Day8.(print_result 8 part_a part_b);
+  Day9.(print_result 9 part_a part_b);
+  Day10.(print_result 10 part_a part_b);
+  Day11.(print_result 11 part_a part_b);
+  Day12.(print_result 12 part_a part_b);
+  Day13.(print_result 13 part_a part_b);
+  Day14.(print_result 14 (part_a (101, 103)) (ignore 0));
+  Day15.(print_result 15 part_a part_b);
+  Day16.(print_result 16 part_a part_b);
+  Day17.(print_string_result 17 part_a part_b);
+  Day18.(print_string_result 18 (part_a >> Int.to_string) part_b);
+  Day19.(print_result 19 part_a part_b);
+  Day20.(print_result 20 (part_a 100) (part_b 100));
+  Day21.(print_result 21 part_a part_b);
+  Day22.(print_result 22 part_a part_b); 
+  Day23.(print_string_result 23 (part_a >> Int.to_string) part_b);
   print_endline [%string "Total time taken was %{!time_taken#Int}ms"]

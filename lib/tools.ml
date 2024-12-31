@@ -64,23 +64,12 @@ let track_seen ~(f: 'a -> 'b) (seen: 'b Hash_set.t) (next: 'a -> 'a list) (here:
   next_values
 
 module IntTuple = struct
-  type t = int * int
-
-  let compare (x0, y0) (x1, y1) = 
-    match Int.compare x0 x1 with
-      0 -> Int.compare y0 y1
-    | c -> c
+  type t = int * int [@@deriving eq, hash, ord, sexp]
 
   let compare_x_first = compare
   let compare_x_last t1 t2 = compare t1 t2 |> Int.neg
   let compare_y_first (x0, y0) (x1, y1) = compare (y0, x0) (y1, x1)
   let compare_y_last t1 t2 = compare_y_first t1 t2 |> Int.neg
-  
-  let (=) t1 t2 = compare t1 t2 = 0
-
-  let t_of_sexp tuple = Tuple2.t_of_sexp Int.t_of_sexp Int.t_of_sexp tuple
-  let sexp_of_t tuple = Tuple2.sexp_of_t Int.sexp_of_t Int.sexp_of_t tuple
-  let hash (x,y) = Int.shift_left (Int.hash x) 16 + Int.hash y
 end
 
 module IntTupleSet = Set.Make(IntTuple)
