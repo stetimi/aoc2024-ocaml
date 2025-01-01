@@ -5,6 +5,8 @@ let assert_cmp_equal expected actual ~cmp ~printer = assert_equal expected actua
 
 let assert_int_equals = assert_equal ~printer:Int.to_string ~cmp:(=)
 
+let assert_int64_equals = assert_equal ~printer:Int64.to_string ~cmp:Int64.(=)
+
 let assert_float_equals = assert_equal ~printer:Float.to_string ~cmp:Float.(=)
 
 let assert_string_equals = assert_equal  ~cmp:String.(=) ~printer:Fn.id
