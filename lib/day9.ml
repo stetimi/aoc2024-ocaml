@@ -1,142 +1,119 @@
 open Core
 
-type file = {id: int; length: int} [@@deriving show]
+let space = -1
 
-type disk_sector =
-| File of file
+type file = {id: int; len: int} [@@deriving show]
+
+type sector =
 | Space of int
-[@@deriving show]
+| File of file [@@deriving show]
 
-type disk = disk_sector list
-[@@deriving show]
+type disk = sector array
 
-type space_ptr = {index: int; length: int}
+(* DEBUGGING *)
+let show_sector = function
+| Space len -> String.init len ~f:(Fn.const '.') 
+| File {id; len} -> String.init len ~f:(Fn.const (Char.of_int_exn (48+id)))
 
-let print_spaces spaces =
-  print_endline @@  Tools.map_printer Int.to_string (Tools.list_printer @@ Int.to_string) spaces
+let show_disk disk =
+  String.concat_array (Array.map disk ~f:show_sector) ~sep:"" 
 
-let print_disk_byte = function
-| (-1) -> "."
-| n -> Int.to_string n
+let dump_disk filename disk =
+  let sector_to_ints = function
+  | Space n -> Array.init n ~f:(Fn.const (-1))
+  | File {id; len} -> Array.init len ~f:(Fn.const id) in
+  let data = Array.concat_map disk ~f:sector_to_ints |> Array.map ~f:Int.to_string |> String.concat_array ~sep:"," in
+  Out_channel.write_all filename ~data
+(* END DEBUGGING *)
 
-let print_disk disk = 
-  print_endline (disk |> List.of_array |> Fn.flip List.take 45 |> List.map ~f:print_disk_byte |> String.concat)
-
-let add_space m space_ptr =
-  Map.update m space_ptr.length ~f:(function
-  | None -> [space_ptr.index] 
-  | Some elts -> space_ptr.index :: elts
-  )
-
-  let rec find_spaces spaces length max_length =
-  if length > max_length then None
-  else
-    match Map.find spaces length with
-    | None -> find_spaces spaces (length + 1) max_length
-    | Some space_ptrs -> (match space_ptrs with
-      | [] -> find_spaces spaces (length + 1) max_length
-      | xs -> Some (length, xs)
+let to_disk (disk_map: char array): disk =
+  Array.mapi disk_map
+    ~f:(fun i ch ->
+      let len = Char.to_int ch - 48 in
+      if i % 2 = 0
+        then let id = i / 2 in File {id; len}
+        else Space len
     )
 
-let remove_best_space_index spaces min_length =
-  let max_length = fst @@ Map.max_elt_exn spaces in
-  match find_spaces spaces min_length max_length with
-  | None -> None, spaces
-  | Some (_, []) -> failwith "No values, unhandled"
-  | Some (len, index :: rest) -> 
-      Some index, Map.set spaces ~key:len ~data:rest
-
-let to_disk_rev (s: string) =
-  String.to_array s
-  |> Array.foldi ~init:[] ~f:(fun index disk ch ->
-    let length = (Char.to_int ch) - 48 in
-    let sector = if Int.rem index 2 = 0
-      then let id = index / 2 in File {id; length}
-      else Space length in
-    sector::disk
+let copy_back disk space_len end_i =
+  let rec go () = match disk.(!end_i) with
+  | Space _ -> (
+      end_i := !end_i - 1;
+      go ()
   )
-
-let to_array disk_rev =
-  let disk = List.rev disk_rev in
-  let disk_array = Array.init 250_000 ~f:(Fun.const (-1)) in
-  let head = ref 0 in
-  let copy value length = (
-    for i = 0 to (length - 1) do
-      Array.set disk_array (i + !head) value
-    done;
-    head := !head + length
+  | File {id; len} -> (
+      match space_len with
+      | _ when space_len < len -> (
+            disk.(!end_i) <- File {id; len=len-space_len};
+            (id, space_len)
+          )
+      | _ -> (
+            end_i := (!end_i) - 1;
+            (id, len)
+          )
   ) in
-  let spaces = List.fold disk ~init:(Map.empty (module Int)) ~f:(fun spaces -> function
-  | Space 0 -> spaces
-  | Space length -> 
-      let spaces = add_space spaces {index = !head; length} in
-      copy (-1) length;
-      spaces
-  | File {id; length} -> 
-      copy id length;
-      spaces
+  go ()
+
+let defragment_by_byte (disk: disk): disk =
+  let start_i = ref 0 in
+  let end_i = ref (Array.length disk - 1) in
+  let defragged = CCVector.create () in
+  let copy () = match disk.(!start_i) with
+  | File f -> (
+      start_i := !start_i + 1;
+      CCVector.push defragged (File f)
+  )
+  | Space space_len -> (
+      let (id, file_len) = copy_back disk space_len end_i in
+      if space_len > file_len
+        then disk.(!start_i) <- Space (space_len - file_len)
+        else start_i := !start_i + 1;
+      CCVector.push defragged (File {id; len=file_len})
   ) in
-  let spaces = Map.map spaces ~f:List.rev in
-  (* print_disk disk_array; *)
-  disk_array, spaces
+  let rec run () =
+    if !start_i < !end_i
+      then (
+        copy ();
+        run ()
+      ) else (
+        CCVector.push defragged disk.(!start_i)
+      ) in  
+  run ();
+  CCVector.to_array defragged
 
-let defragment_fully disk =
-  let i_start = ref 0 in
-  let i_end = ref @@ Array.length disk - 1 in
-  let get ref = Array.get disk !ref in
-  let set ref = Array.set disk !ref in
-  while !i_start < !i_end do
-    if Array.get disk !i_start = -1 
-    then (
-      let moved_char =  get i_end in
-      if moved_char <> -1 then (
-        set i_start moved_char;
-        set i_end (-1);
-        Ref.replace i_start (Int.succ);
-      );
-      Ref.replace i_end (Int.pred); 
-    )
-    else Ref.replace i_start (Int.succ);
-  done
+let maps (disk: disk) =
+  Array.foldi disk ~init:(Map.empty (module Int), []) ~f:(fun i (spaces_map, indexed_files) sector ->
+    match sector with
+    | Space len when len <> 0 -> Map.add_multi spaces_map ~key:len ~data:i, indexed_files
+    | Space _ -> spaces_map, indexed_files
+    | File f -> spaces_map, (i, f) :: indexed_files
+  )
+  |> Tuple2.map_fst ~f:(Map.map ~f:List.rev)
 
-let defragment_best_efforts disk_rev (disk: int array) spaces: unit =
-  let copy id index len = (
-    (* print_endline [%string "Copying id: %{id#Int} to %{index#Int}, length %{len#Int}"]; *)
-    for i = index to index + len - 1 do
-      (* print_endline [%string "Setting %{i#Int} to %{id#Int}"]; *)
-      Array.set disk i id
-    done) in
-  let _ = List.fold_left disk_rev ~init:spaces ~f:(fun spaces sector -> match sector with
-    | Space _ -> spaces
-    | File {id; length} -> 
-      let space_index, spaces = remove_best_space_index spaces length in 
-      Option.iter space_index ~f:(fun space_index -> 
-        copy id space_index length;
-        (* copy (-1) 0 length; *)
-      );
-      (* print_disk disk; *)
-      spaces
-  ) in
-  ()
+let defragment_by_sector (disk: disk) =
+  let _spaces_map, _indexed_files = maps disk in
+  disk
 
-let checksum disk =
-  Array.to_sequence disk
-  |> Sequence.take_while ~f:(fun n -> n <> -1)
-  |> Sequence.mapi ~f:(fun i n -> i * n)
-  |> Sequence.sum (module Int) ~f:Fun.id
+let sum_range index len =
+  let sum n = n * (n - 1) / 2 in
+  sum (index + len) - sum index
+
+let checksum (disk: sector list): int =
+  let sector_checksum acc index = function
+  | Space len -> (acc, index + len)
+  | File {id; len} -> (acc + id * (sum_range index len), index + len) in
+  List.fold_left disk ~init:(0,0) ~f:(fun (acc, index) -> sector_checksum acc index) |> fst
 
 let part_a filename = 
-  let disk_map = In_channel.read_all filename in
-  let disk, _ = to_disk_rev disk_map |> to_array in
-  defragment_fully disk;
-  checksum disk
+  let disk = In_channel.read_all filename |> String.to_array |> to_disk in
+  let defragged = defragment_by_byte disk in
+  checksum (Array.to_list defragged)
+
+let disk () = In_channel.read_all "test/test_inputs/day9.txt" |> String.to_array |> to_disk
 
 let part_b filename = 
-  let disk_map = In_channel.read_all filename in
-  let disk_rev = to_disk_rev disk_map in
-  (* print_endline @@ show_disk disk_rev; *)
-  let disk, spaces = to_array disk_rev in
-  (* print_endline ""; *)
-  (* print_spaces spaces; *)
-  defragment_best_efforts disk_rev disk spaces;
-  checksum disk
+  let disk = In_channel.read_all filename |> String.to_array |> to_disk in
+  let _defragged = defragment_by_sector disk in
+  2858
+  (* checksum (Array.to_list defragged) *)
+

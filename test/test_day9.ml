@@ -4,4 +4,5 @@ open Assertions
 
 let day9_tests = "day 9 test suite" >::: [
   "part a sample" >:: (fun _ -> assert_int_equals 1928 (Day9.part_a "./test_inputs/day9.txt"));
+  "part b sample" >:: (fun _ -> assert_int_equals 2858 (Day9.part_b "./test_inputs/day9.txt"));
 ]

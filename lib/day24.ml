@@ -131,6 +131,5 @@ let part_b filename =
   let inputs_graph = mk_inputs_graph gates in
   let zeds = find_all_starting_with gates 'z' in
   let find_recursive_inputs = find_recursive_inputs inputs_graph in
-  let signals = add gates bits 0L 0L in
-  let faulty = find_faulty_outputs find_recursive_inputs gates zeds signals in
+  let faulty = find_faulty_outputs find_recursive_inputs gates zeds (add gates bits 0L 0L) in
   List.length faulty |> Int64.of_int
