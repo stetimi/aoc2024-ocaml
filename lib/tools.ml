@@ -108,9 +108,9 @@ let surroundings (max_x, max_y) (x,y) =
 let scale factor (x,y) = x*factor, y*factor
 
 type direction = N | E | S | W
-[@@deriving ord, show]
+[@@deriving eq, hash, ord, sexp, show]
 
-let to_point = function N -> 0,1 | E -> 1,0 | S -> 0,-1 | W -> -1,0
+let to_point = function N -> 0,-1 | E -> 1,0 | S -> 0,1 | W -> -1,0
 
 let turn_right = function N -> E | E -> S | S -> W | W -> N
 
