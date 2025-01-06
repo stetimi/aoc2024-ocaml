@@ -64,7 +64,7 @@ let track_seen ~(f: 'a -> 'b) (seen: 'b Hash_set.t) (next: 'a -> 'a list) (here:
   next_values
 
 module IntTuple = struct
-  type t = int * int [@@deriving eq, hash, ord, sexp]
+  type t = int * int [@@deriving eq, hash, ord, sexp, show]
 
   let compare_x_first = compare
   let compare_x_last t1 t2 = compare t1 t2 |> Int.neg
