@@ -76,6 +76,10 @@ module IntTupleSet = Set.Make(IntTuple)
 
 module IntTupleMap = Map.Make(IntTuple)
 
+module CharCharTuple = struct
+  type t = char * char [@@deriving eq, hash, ord, sexp, show]
+end
+
 let show_grid (grid: 'a array array) ~(f: 'a -> char): string =
   let show_row = Array.map ~f >> String.of_array in
   let rows = Array.map grid ~f:show_row in
@@ -188,6 +192,17 @@ let memoize m f =
     | Some value -> value in
   g
 
+let memoize_non_recursive m f =
+  let cache = Hashtbl.create m in
+  let g key =
+    match Hashtbl.find cache key with
+    | None ->
+        let value = f key in
+        Hashtbl.add_exn cache ~key ~data:value;
+        value
+    | Some value -> value in
+  g
+  
 let binary_chop 
     ~(f: int -> 'a) 
     ~(cmp: 'a -> 'a -> int) 
