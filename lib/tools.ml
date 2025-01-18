@@ -227,6 +227,10 @@ let single_exn = function
 | [x] -> x
 | _ -> raise NotSingle
 
+let single_or f = function
+| [x] -> x
+| _ -> f ()
+
 let manhattan_dist (x0,y0) (x1,y1) =
   Int.abs (x0-x1) + Int.abs(y0-y1)
 
