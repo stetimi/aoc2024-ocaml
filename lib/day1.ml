@@ -2,7 +2,7 @@ open Core
 
 let parse_ints s =
   let parts = String.split_on_chars s ~on:[' '] |> List.filter ~f:(String.is_empty |> Fun.negate) in
-  let _ = assert (List.length parts = 2) in
+  assert (List.length parts = 2);
   let x = List.hd_exn parts in
   let y = List.last_exn parts in
   [Int.of_string x; Int.of_string y]

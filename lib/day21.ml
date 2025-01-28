@@ -132,10 +132,10 @@ let merge_keyboard_presses
   (numeric_keypad_shortest_paths: shortest_paths_fn) 
   (code: char list): path list =
   let paths = ref (keypad_presses numeric_keypad_shortest_paths code) in
-  for i = 1 to levels do
+  for _i = 1 to levels do
     paths := List.concat_map (!paths) ~f:(keypad_presses_1 directional_keypad_shortest_path);
-    let lengths_str = String.concat ~sep:";" (List.map (!paths) ~f:(List.length >> Int.to_string)) in
-    print_endline [%string "Level %{i#Int} has %{List.length !paths#Int} paths of lengths [%{lengths_str}]"];
+    (* let lengths_str = String.concat ~sep:";" (List.map (!paths) ~f:(List.length >> Int.to_string)) in *)
+    (* print_endline [%string "Level %{i#Int} has %{List.length !paths#Int} paths of lengths [%{lengths_str}]"]; *)
   done;
   !paths
 

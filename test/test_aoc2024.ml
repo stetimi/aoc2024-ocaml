@@ -27,6 +27,7 @@ let () =
       Test_day22.day22_tests;
       Test_day23.day23_tests;
       Test_day24.day24_tests;
+      Test_day25.day25_tests;
       Test_grid.grid_tests;
       Test_tools.tools_tests;
     ]
