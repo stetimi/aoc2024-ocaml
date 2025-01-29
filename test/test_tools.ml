@@ -20,11 +20,13 @@ let tools_tests = "tools test suite" >::: [
     let next = (function
     | 0 -> [10; 11]
     | 10 -> [11; 12]
-    | _ -> failwith "") in
+    | _ -> []) in
     let next = track_seen ~f:Fn.id (Hash_set.create (module Int)) next in
-    assert_list_equals [10; 11] (next 0) ~cmp:(=) ~printer:(Int.to_string);
-    assert_list_equals [12] (next 10) ~cmp:(=) ~printer:(Int.to_string);
-    assert_list_equals [] (next 0) ~cmp:(=) ~printer:(Int.to_string);
+    assert_list_equals [10; 11] (next 0) ~cmp:(=) ~printer:Int.to_string;
+    assert_list_equals [11; 12] (next 10) ~cmp:(=) ~printer:Int.to_string;
+    assert_list_equals [11] (next 0) ~cmp:(=) ~printer:Int.to_string;
+    assert_list_equals [] (next 11) ~cmp:(=) ~printer:Int.to_string;
+    assert_list_equals [] (next 0) ~cmp:(=) ~printer:Int.to_string;
   );
   "binary_chop" >:: (fun _ ->
     let f n = [|1; 3; 5; 7; 9|].(n) in

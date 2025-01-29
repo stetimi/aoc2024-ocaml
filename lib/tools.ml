@@ -59,9 +59,8 @@ let bfs ~(init:'a) ~(next: 'a -> 'a list) ~(is_target:'a -> bool): 'a list =
 
 
 let track_seen ~(f: 'a -> 'b) (seen: 'b Hash_set.t) (next: 'a -> 'a list) (here: 'a): 'a list =
-  let next_values = next here |> List.filter ~f:(fun n -> not @@ Hash_set.mem seen (f n)) in
-  List.iter next_values ~f:(fun n -> Hash_set.add seen (f n));
-  next_values
+  Hash_set.add seen here;
+  next here |> List.filter ~f:(fun n -> not @@ Hash_set.mem seen (f n))
 
 module IntTuple = struct
   type t = int * int [@@deriving eq, hash, ord, sexp, show]
@@ -113,6 +112,8 @@ let scale factor (x,y) = x*factor, y*factor
 
 type direction = N | E | S | W
 [@@deriving eq, hash, ord, sexp, show]
+
+let directions = [N; E; S; W]
 
 let to_point = function N -> 0,-1 | E -> 1,0 | S -> 0,1 | W -> -1,0
 
@@ -249,3 +250,8 @@ let frequency_map (m: ('a, 'b) Comparator.Module.t) (xs: 'a list): ('a, int, 'b)
   )
 
 let on f c x y = c (f x) (f y)
+
+let zip_nexts xs =
+  let tails = List.tl_exn xs in
+  let heads = List.drop_last_exn xs in
+  List.zip_exn heads tails

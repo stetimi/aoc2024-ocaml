@@ -26,7 +26,7 @@ let ignore = Fn.const
 let () = 
   let time_taken = ref 0 in
   let print_string_result = print_result ~printer:Fn.id @@ total_time time_taken in
-  (* let print_int64_result = print_result ~printer:Int64.to_string @@ total_time time_taken in *)
+  let print_int64_result = print_result ~printer:Int64.to_string @@ total_time time_taken in
   let print_result = print_result ~printer:Int.to_string @@ total_time time_taken in
   Day1.(print_result 1 part_a part_b);
   Day2.(print_result 2 part_a part_b);
@@ -45,11 +45,12 @@ let () =
   Day15.(print_result 15 part_a part_b);
   Day16.(print_result 16 part_a part_b);
   Day17.(print_string_result 17 part_a part_b);
-  Day18.(print_string_result 18 (part_a >> Int.to_string) part_b);
+  (* Day18.(print_string_result 18 (part_a >> Int.to_string) part_b); *)
   Day19.(print_result 19 part_a part_b);
   Day20.(print_result 20 (part_a 100) (part_b 100));
   Day21.(print_result 21 part_a part_b);
   Day22.(print_result 22 part_a part_b); 
   Day23.(print_string_result 23 (part_a >> Int.to_string) part_b);
-  (* Day24.(print_int64_result 24 part_a part_b);  *)
+  Day24.(print_int64_result 24 part_a part_b); 
+  Day25.(print_result 25 part_a part_b); 
   print_endline [%string "Total time taken was %{!time_taken#Int}ms"]

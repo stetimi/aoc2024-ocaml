@@ -1,161 +1,92 @@
-open Core
-open Tools
+open! Core
+open! Tools
 
-let read_codes = In_channel.read_lines >> List.map ~f:String.to_list 
+let numeric = "789456123 0A" |> String.to_array
+let directional = " ^A<v>" |> String.to_array
 
-type keypad = (char, (int * int), Char.comparator_witness) Map_intf.Map.t
+let read_codes = In_channel.read_lines
 
-let numeric_keypad_alist = [
-  'A',(0,0);
-  '0',(-1,0);
-  '3',(0,-1);
-  '2',(-1,-1);
-  '1',(-2,-1);
-  '6',(0,-2);
-  '5',(-1,-2);
-  '4',(-2,-2);
-  '9',(0,-3);
-  '8',(-1,-3);
-  '7',(-2,-3);
-] 
+let to_direction = function
+| '<' -> -1
+| '>' -> 1
+| '^' -> -3
+| 'v' -> 3
+| _ -> failwith "unhandled"
 
-let numeric_keypad = Map.of_alist_exn (module Char) numeric_keypad_alist
-let reverse_numeric_keypad = List.map numeric_keypad_alist ~f:(fun (a,b) -> b,a) |> IntTupleMap.of_alist_exn
+let walk keypad x y path =
+  path
+  |> Sequence.map ~f:to_direction
+  |> Sequence.folding_map ~init:(y * 3 + x) ~f:(fun i d ->
+    let i = Array.normalize keypad (i + d) mod (Array.length keypad) in
+    i, keypad.(i)
+  )
 
-let directional_keypad_alist = [
-  'A',(0,0);
-  '^',(-1,0);
-  '<',(-2,1);
-  'v',(-1,1);
-  '>',(0,1);
-] 
+let divmod x y = x / y, x mod y
 
-let directional_keypad = Map.of_alist_exn (module Char) directional_keypad_alist
-let reverse_directional_keypad = List.map directional_keypad_alist ~f:(fun (a,b) -> b,a) |> IntTupleMap.of_alist_exn
+let repeat len ch = Array.create ~len ch |> String.of_array
 
-type path = char list
-type shortest_path_fn = char -> char -> path
-type shortest_paths_fn = char -> char -> path list
+let paths_between keypad start finish =
+  let index v = Array.findi_exn keypad ~f:(fun _ k -> Char.(k = v)) |> fst in
+  let y1, x1 = divmod (index start) 3 in
+  let y2, x2 = divmod (index finish) 3 in
+  let hor_ch = if x2 > x1 then '>' else '<' in
+  let hor = repeat (Int.abs (x2 - x1)) hor_ch in
+  let ver_ch = if y2 > y1 then 'v' else '^' in
+  let ver = repeat (Int.abs (y2 - y1)) ver_ch in
+  let falls_into_gap path = 
+    let walked = walk keypad x1 y1 (Array.to_sequence @@ String.to_array path) in
+    Sequence.mem walked ' ' ~equal:(Char.equal) in
+  List.remove_consecutive_duplicates [hor ^ ver; ver ^ hor] ~equal:String.equal
+  |> List.filter ~f:(Fn.non falls_into_gap)
+  |> List.map ~f:(fun path -> path ^ "A")
 
-let sign n = Sign.to_int @@ Int.sign n
+module CostBetweenKey = struct
+  type t = char * char * int [@@deriving hash, ord, sexp]
+end
 
-let rev_direction = function 
-  | '^' -> 'v'
-  | 'v' -> '^'
-  | '<' -> '>'
-  | '>' -> '<'
-  | 'A' -> 'A'
-  | _ -> failwith "Not a direction"
+module CostKey = struct
+  type t = string * int [@@deriving hash, ord, sexp]
+end
 
-let to_direction pos = match pos with
-| -1,0 -> '<'
-| 1,0 -> '>'
-| 0,-1 -> '^'
-| 0,1 -> 'v'
-| _ -> failwith [%string "Not a position representing a direction: (%{fst pos#Int},%{snd pos#Int})"]
+type memos = {
+  cost_between_cache: (CostBetweenKey.t, int) Hashtbl.t;
+  cost_cache: (CostKey.t, int) Hashtbl.t;
+}
 
-let rec combinations n m n_elt m_elt =
-  if n = 0 then [List.init m ~f:(Fn.const m_elt)]
-  else if m = 0 then [List.init n ~f:(Fn.const n_elt)]
-  else
-    let with_m = List.map (combinations (n - 1) m n_elt m_elt) ~f:(fun l -> n_elt :: l) in
-    let with_n = List.map (combinations n (m - 1) n_elt m_elt) ~f:(fun l -> m_elt :: l) in
-    with_m @ with_n
+let rec cost_between memos keypad start finish links = 
+  if links <= 0 then 1 else
+  match Hashtbl.find memos.cost_between_cache (start, finish, links) with 
+  | None ->
+    let paths = paths_between keypad start finish in
+    let costs = List.map paths ~f:(fun path -> cost memos directional path (links - 1)) in
+    let cost_between = List.min_elt costs ~compare:Int.compare |> Option.value_exn in
+    Hashtbl.set memos.cost_between_cache ~key:(start, finish, links) ~data:cost_between;
+    cost_between
+  | Some costs -> costs
+and cost memos keypad keys links =
+  match Hashtbl.find memos.cost_cache (keys, links) with 
+  | None ->
+      let paths = zip_nexts @@ String.to_list ("A" ^ keys) in
+      let cost_between_keys (a, b) = cost_between memos keypad a b links in
+      let cost = List.sum (module Int) paths ~f:cost_between_keys in
+      Hashtbl.set memos.cost_cache ~key:(keys, links) ~data:cost;
+      cost
+  | Some cost -> cost
 
-let numeric_keypad_shortest_paths (src) (dest): path list =
-  assert (let test = Map.mem numeric_keypad src in if not test then print_endline [%string "Bad numeric: %{src#Char}"]; test);
-  assert (let test = Map.mem numeric_keypad dest in if not test then print_endline [%string "Bad numeric: %{dest#Char}"]; test);
-  let key_pos = Map.find_exn numeric_keypad in
-  let (sx,sy), (dx,dy) = key_pos src, key_pos dest in
-  let x_moves = Int.abs (dx-sx) in
-  let y_moves = Int.abs (dy-sy) in
-  let delta_x = sign (dx-sx), 0 in
-  let delta_y = 0, sign (dy-sy) in
-  let gap = (-2, 0) in
-  let is_valid_path path = 
-    let rec loop pos = function
-    | [] -> true
-    | elt::rest -> 
-        let pos = add_points pos elt in
-        if IntTuple.equal gap pos 
-          then false
-          else loop pos rest in
-    loop (sx,sy) path in
-  combinations x_moves y_moves delta_x delta_y 
-  |> List.filter ~f:is_valid_path
-  |> List.map ~f:(List.map ~f:to_direction)
+let numeric_part code =
+  Int.of_string @@ String.drop_suffix code 1
 
-let directional_keypad_shortest_path src dest = 
-  let rec calc src dest =
-    assert (let test = Map.mem directional_keypad src in if not test then print_endline [%string "Bad direction: %{src#Char}"]; test);
-    assert (let test = Map.mem directional_keypad dest in if not test then print_endline [%string "Bad direction: %{dest#Char}"]; test);
-    match (src, dest) with
-    | _ when Char.(src = dest) -> []
-    | ('A', '^') -> ['<']
-    | ('A', '<') -> ['v';'<';'<']
-    | ('A', 'v') -> ['v';'<']
-    | ('A', '>') -> ['v']
-    | ('^', '<') -> ['v';'<']
-    | ('^', 'v') -> ['v']
-    | ('^', '>') -> ['>';'v']
-    | ('>', '^') -> ['^';'<']
-    | ('<', 'v') -> ['>']
-    | ('<', '>') -> ['>';'>']
-    | ('v', '>') -> ['>']
-    | _ -> calc dest src |> List.map ~f:rev_direction |> List.rev in
-  calc src dest
+let complexity robots code =
+  let memos = {
+    cost_between_cache = Hashtbl.create (module CostBetweenKey);
+    cost_cache = Hashtbl.create (module CostKey);
+  } in
+  cost memos numeric code (robots + 1) * numeric_part code
 
-let keypad_presses_1 (shortest_path: shortest_path_fn) (code: char list): path list =
-  let presses, _ = List.fold code ~init:([[]],'A') ~f:(fun (presses,src) key ->
-    let path = shortest_path src key in 
-    List.map presses ~f:(fun press ->
-      press @ path @ ['A']
-    ), key
-  ) in
-  presses |> List.min_elt ~compare:(on List.length Int.compare) |> Option.value_map ~f:List.singleton ~default:[]
+let part_a filename =
+  let codes = read_codes filename in
+  List.sum (module Int) codes ~f:(complexity 2)
 
-(* Gives all the paths that can make a string *)
-let keypad_presses (shortest_paths: shortest_paths_fn) (code: char list): path list =
-  let presses, _ = List.fold code ~init:([[]],'A') ~f:(fun (presses,src) key ->
-    let paths = shortest_paths src key in 
-    List.concat_map paths ~f:(fun path -> 
-      List.map presses ~f:(fun press ->
-        press @ path @ ['A']
-      )
-    ), key
-  ) in
-  presses
-
-let merge_keyboard_presses 
-  (levels: int)
-  (directional_keypad_shortest_path: shortest_path_fn) 
-  (numeric_keypad_shortest_paths: shortest_paths_fn) 
-  (code: char list): path list =
-  let paths = ref (keypad_presses numeric_keypad_shortest_paths code) in
-  for _i = 1 to levels do
-    paths := List.concat_map (!paths) ~f:(keypad_presses_1 directional_keypad_shortest_path);
-    (* let lengths_str = String.concat ~sep:";" (List.map (!paths) ~f:(List.length >> Int.to_string)) in *)
-    (* print_endline [%string "Level %{i#Int} has %{List.length !paths#Int} paths of lengths [%{lengths_str}]"]; *)
-  done;
-  !paths
-
-let find_shortest_path merge_keyboard_presses code = 
-  let f = merge_keyboard_presses directional_keypad_shortest_path numeric_keypad_shortest_paths in
-  let paths = f code in
-  List.min_elt paths ~compare:(on List.length Int.compare) |> Option.value_exn
-
-let numeric_part code = 
-  String.of_list code |> Fn.flip String.prefix 3 |> Int.of_string
-
-let complexity merge_keyboard_presses code =
-  let path = find_shortest_path merge_keyboard_presses code in
-  let numeric_part = numeric_part code in
-  numeric_part * (List.length path)
-
-let part_a filename = 
-  read_codes filename 
-  |> List.sum (module Int) ~f:(complexity (merge_keyboard_presses 2))
-  
-let part_b filename = 
-  read_codes filename 
-  |> List.sum (module Int) ~f:(complexity (merge_keyboard_presses 25))
+let part_b filename =
+  let codes = read_codes filename in
+  List.sum (module Int) codes ~f:(complexity 25)

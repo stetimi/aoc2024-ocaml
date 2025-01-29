@@ -108,7 +108,7 @@ let part_a filename =
   read_zed_binary zeds signals
 
 let part_b _filename = 
-  0  
+  0L (* done by hand *)
 
 let has_input name gate = String.(gate.s1 = name || gate.s2 = name)
 
