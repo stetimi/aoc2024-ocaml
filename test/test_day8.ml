@@ -1,8 +1,9 @@
-open Core
+open! Core
 open OUnit2
 open Aoc2024
 open Assertions
 open Tools
+open Day8
 
 let grid = Day8.read_map "test_inputs/day8.txt"
 
@@ -18,6 +19,6 @@ let day8_tests = "day 8 test suite" >::: [
     let zeroes = Map.find_exn antenna_positions '0' in
     assert_list_equals [20;29;43;52] zeroes ~cmp:(=) ~printer:Int.to_string;
   );
-  "part a sample" >:: (fun _ -> assert_int_equals 14 (Day8.part_a "./test_inputs/day8.txt"));
-  "part b sample" >:: (fun _ -> assert_int_equals 34 (Day8.part_b "./test_inputs/day8.txt"));
+  "part a sample" >:: (fun _ -> assert_int_equals 14 (part_a @@ read_map "./test_inputs/day8.txt"));
+  "part b sample" >:: (fun _ -> assert_int_equals 34 (part_b  @@ read_map "./test_inputs/day8.txt"));
 ]

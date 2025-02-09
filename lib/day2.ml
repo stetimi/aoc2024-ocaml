@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 let parse_reports: string -> int list =
   String.split_on_chars ~on:[' '] 
@@ -32,10 +33,10 @@ let is_safe_with_tolerance report =
   else
     List.range 0 (List.length report) |> List.exists ~f:(list_without report >> is_safe)
 
-let part_a filename =
-  let reports = read_reports filename in
-  List.count reports ~f:is_safe
+let part_a =
+  List.count ~f:is_safe
 
-let part_b filename =
-  let reports = read_reports filename in
-  List.count reports ~f:is_safe_with_tolerance
+let part_b =
+  List.count ~f:is_safe_with_tolerance
+
+let solve = solve read_reports part_a part_b

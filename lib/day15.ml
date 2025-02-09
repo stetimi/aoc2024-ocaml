@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 type cell =
 | Space
@@ -172,3 +173,5 @@ let part_b (filename): int =
   let box_lefts = find_cells warehouse BoxLeft in
   let gps_coords = Array.map box_lefts ~f:(fun (x, y) -> 100 * y + x) in
   Array.sum (module Int) gps_coords ~f:Fn.id
+
+let solve = solve Fn.id part_a part_b

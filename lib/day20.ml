@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 type track = (int * int) array
 
@@ -37,11 +38,12 @@ let cheats max_dist (track: track) =
     )
   )
 
-let run max_dist min_cheat filename =
-  let track = read_track filename in
+let run max_dist min_cheat track =
   let cheats = cheats max_dist track in
   Array.count cheats ~f:(fun l -> l >= min_cheat)
 
 let part_a = run 2
 
 let part_b = run 20
+
+let solve = solve read_track (part_a 100) (part_b 100)

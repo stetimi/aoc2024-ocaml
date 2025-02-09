@@ -20,6 +20,6 @@ let day10_tests = "day 10 test suite" >::: [
   "next_steps_in_trail" >:: (fun _ ->
     assert_pos_list_equal [3,3;2,2] (next_steps_in_trail grid (3,2))
   );
-  "part a sample" >:: (fun _ -> assert_int_equals 36 (Day10.part_a "./test_inputs/day10.txt"));
-  "part b sample" >:: (fun _ -> assert_int_equals 81 (Day10.part_b "./test_inputs/day10.txt"));
+  "part a sample" >:: (fun _ -> assert_int_equals 36 (part_a @@ read_trails "./test_inputs/day10.txt"));
+  "part b sample" >:: (fun _ -> assert_int_equals 81 (part_b @@ read_trails "./test_inputs/day10.txt"));
 ]

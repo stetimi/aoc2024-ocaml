@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 type grid = int array array
 type pos = int * int
@@ -52,12 +53,12 @@ let follow_trails trails_map =
       ~is_target:(end_of_trail trails_map)
   ) 
 
-let part_a filename = 
-  let trails_map = read_grid filename in
-  let trails = follow_trails trails_map in
+let read_trails filename = read_grid filename |> follow_trails
+
+let part_a trails = 
   Array.sum (module Int) trails ~f:(fun xs -> Hash_set.of_list (module IntTuple) xs |> Hash_set.to_list |> List.length)
 
-let part_b filename = 
-  let trails_map = read_grid filename in
-  let trails = follow_trails trails_map in
+let part_b trails = 
   Array.sum (module Int) trails ~f:List.length
+
+let solve = solve read_trails part_a part_b

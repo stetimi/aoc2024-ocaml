@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 let space = -1
 
@@ -102,18 +103,20 @@ let checksum (disk: disk) (limit: int): int =
   done;
   !sum
 
-let part_a filename = 
-  let disk = In_channel.read_all filename |> to_disk ~on_space:(fun _ _ -> ()) in
+let part_a disk_map = 
+  let disk = to_disk disk_map ~on_space:(fun _ _ -> ()) in
   let endi = defragment_by_byte disk in
   checksum disk endi
 
-let part_b filename = 
+let part_b disk_map = 
   let spaces_by_len = Hashtbl.create (module Int) in
   let on_space index len = Hashtbl.change spaces_by_len len ~f:(fun ids ->
     if len = 0 then None
     else match ids with
       | None -> Some (Set.singleton (module Int) index)
       | Some ids -> Some (Set.add ids index)) in
-  let disk = In_channel.read_all filename |> to_disk ~on_space in
+  let disk = to_disk disk_map ~on_space in
   defragment_by_sector disk spaces_by_len;
   checksum disk (Array.length disk - 1)
+
+let solve = solve In_channel.read_all part_a part_b

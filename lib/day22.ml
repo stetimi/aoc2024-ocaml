@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 let read_secret_numbers filename =
   In_channel.read_lines filename |> List.map ~f:Int.of_string
@@ -42,10 +43,6 @@ let windows (len: int) (sequence: 'a list): 'a list Sequence.t =
         else Some (window, List.tl_exn s) 
       ) 
 
-let part_a filename = 
-  let secret_numbers = read_secret_numbers filename in
-  List.sum (module Int) secret_numbers ~f:(repeat 2000 evolve)
-
 type hiding_spot = {
   sequence: int;
   price: int;
@@ -67,9 +64,11 @@ let hiding_spots (secret_number: int): hiding_spot list =
       )
   ) 
 
-let part_b filename = 
-  let all_hiding_spots = read_secret_numbers filename
-  |> List.concat_map ~f:hiding_spots in
+let part_a secret_numbers = 
+  List.sum (module Int) secret_numbers ~f:(repeat 2000 evolve)
+  
+let part_b secret_numbers = 
+  let all_hiding_spots = List.concat_map secret_numbers ~f:hiding_spots in
   let hiding_spot_total_prices = List.fold_left 
     all_hiding_spots
     ~init:(Map.empty (module Int))
@@ -80,3 +79,5 @@ let part_b filename =
   |> List.max_elt ~compare:(on snd Int.compare) 
   |> Option.value_exn
   |> snd
+
+let solve = solve read_secret_numbers part_a part_b

@@ -1,5 +1,6 @@
 open! Core
-open! Tools
+open Tools
+open Timings
 
 type pos = int * int [@@deriving eq, hash, ord, sexp, show]
 
@@ -44,8 +45,6 @@ let end_dists end_pos dists =
   directions
   |> List.filter_map ~f:(fun direction -> Hashtbl.find dists {pos=end_pos; direction})
 
-let filename = "test/test_inputs/day16.txt"
-
 let run_dijkstra maze =
   let vertices = vertices maze in
   let source_pos = find_in_grid maze ~f:Char.(fun ch -> ch = 'S') |> Option.value_exn in
@@ -62,27 +61,24 @@ let run_dijkstra maze =
     ~source 
     ~is_end
 
-let part_a filename = 
+type maze_info = {
+  maze: char array array;
+  end_pos: int * int
+}
+
+let read_maze filename =
   let maze = In_channel.read_lines filename
   |> List.map ~f:String.to_array  
   |> Array.of_list in
-  let dists, _ = run_dijkstra maze in
   let end_pos = find_in_grid maze ~f:Char.(fun ch -> ch = 'E') |> Option.value_exn in
+  maze, end_pos
+
+let part_a (maze, end_pos) = 
+  let dists, _ = run_dijkstra maze in
   end_dists end_pos dists |> List.min_elt ~compare:Int.compare |> Option.value ~default:0
 
-let part_b filename =
-  let maze = In_channel.read_lines filename
-  |> List.map ~f:String.to_array  
-  |> Array.of_list in
+let part_b (maze, end_pos)  =
   let dists, prevs = run_dijkstra maze in
-  (* let _prevs = Hashtbl.to_alist prevs |> List.sort ~compare:(on fst Vertex.compare) in *)
-  (* List.iter prevs ~f:(fun (v, paths) ->
-    let paths = Set.to_list paths in
-    let paths_str = String.concat (List.map paths ~f:show_vertex) ~sep:";" in
-    let dist = Hashtbl.find_exn dists v in
-    print_endline [%string "%{show_vertex v} -> %{dist#Int} : [%{paths_str}]"]; 
-  ); *)
-  let end_pos = find_in_grid maze ~f:Char.(fun ch -> ch = 'E') |> Option.value_exn in
   let min_dist = end_dists end_pos dists |> List.min_elt ~compare:Int.compare |> Option.value ~default:0 in
   let end_vertex = Hashtbl.to_alist dists
   |> List.filter ~f:(fun ({pos;direction=_},dist) -> equal_pos pos end_pos && dist = min_dist)
@@ -104,3 +100,5 @@ let part_b filename =
   in 
   bfs ();
   1 + Hash_set.length on_path
+
+let solve = solve read_maze part_a part_b

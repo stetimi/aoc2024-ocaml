@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 type ordering_rule = {before: int; after: int}
 type update = int list
@@ -64,12 +65,15 @@ let part_b_update_score ordering_rules_map update =
       let sorted = sort_by_ordering_rules ordering_rules_map update in
       middle_value sorted
 
-let part_a filename = 
-  let (ordering_rules, updates) = read_input filename in
-  let ordering_rules_map = to_map ordering_rules in
+let shared filename = 
+  let ordering_rules, updates = read_input filename in
+  to_map ordering_rules, updates
+
+let part_a (ordering_rules_map, updates) = 
   List.sum (module Int) updates ~f:(part_a_update_score ordering_rules_map)
   
-let part_b filename =
-  let (ordering_rules, updates) = read_input filename in
-  let ordering_rules_map = to_map ordering_rules in
+let part_b (ordering_rules_map, updates) =
   List.sum (module Int) updates ~f:(part_b_update_score ordering_rules_map)
+
+let solve = 
+  solve shared part_a part_b

@@ -1,3 +1,4 @@
+open! Core
 open OUnit2
 open Aoc2024
 open Assertions
@@ -31,5 +32,5 @@ let day13_tests = "day 13 test suite" >::: [
     assert_float_equals 80. a;
     assert_float_equals 40. b;
   );
-  "part a sample" >:: (fun _ -> assert_int_equals 480 (part_a "./test_inputs/Day13.txt"));
+  "part a sample" >:: (fun _ -> assert_int_equals 480 (part_a @@ read_machine_specs "./test_inputs/Day13.txt"));
 ]

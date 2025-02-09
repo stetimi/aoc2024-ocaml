@@ -1,8 +1,8 @@
+open! Core
 open OUnit2
 open Aoc2024
 open Day17
 open Assertions
-open Core
 
 let zero_registers () = {a=0;b=0;c=0}
 let computer registers = {pc=0; registers;}
@@ -61,5 +61,5 @@ let day17_tests = "day 17 test suite" >::: [
     let result = run computer program in
     assert_array_equal program result ~cmp:(=) ~printer:Int.to_string
   );
-  "part a sample" >:: (fun _ -> assert_string_equals "4,6,3,5,6,3,5,2,1,0" (part_a "./test_inputs/day17.txt"));
+  "part a sample" >:: (fun _ -> assert_string_equals "4,6,3,5,6,3,5,2,1,0" (part_a @@ read_input "./test_inputs/day17.txt"));
 ]

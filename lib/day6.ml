@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 let read_map filename =
   In_channel.read_lines filename
@@ -48,15 +49,13 @@ let walk_get_visited_positions start_pos start_direction grid =
   |> fst
   |> Set.map (module Int) ~f:(fun g -> g.pos)
 
-let part_a filename = 
-  let grid = read_map filename in
+let part_a grid = 
   let start_pos = Grid.find_index_exn ~f:(Char.equal '^') grid in
   let start_direction = Grid.North in
   walk_get_visited_positions start_pos start_direction grid
   |> Set.length
 
-let part_b filename = 
-  let grid = read_map filename in
+let part_b grid = 
   let start_pos = Grid.find_index_exn ~f:(Char.equal '^') grid in
   let start_direction = Grid.North in
   let possible_block_positions = walk_get_visited_positions start_pos start_direction grid 
@@ -74,3 +73,5 @@ let part_b filename =
     | Looped -> true
     | _ -> false
   ))
+
+let solve = solve read_map part_a part_b

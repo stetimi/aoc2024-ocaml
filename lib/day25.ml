@@ -1,5 +1,5 @@
 open! Core
-open! Tools
+open Timings
 
 type schema = int array
 
@@ -45,3 +45,5 @@ let part_a filename =
   List.sum (module Int) locks ~f:(fun lock -> count_keys_fitting_lock lock keys) 
 
 let part_b _filename = 0
+
+let solve = solve Fn.id part_a part_b

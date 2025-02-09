@@ -1,56 +1,56 @@
-open Core
+open! Core
 open Aoc2024
-open Tools
+open Timings
 
-let time_ns = Time_ns.now >> Time_ns.to_int_ns_since_epoch
+let to_millis ns = 
+  let millis = Int63.to_float ns /. 1_000_000. in
+  sprintf "%.2f" millis
 
-let timed_millis f input =
-  let start = time_ns () in
-  let result = f input in
-  let finish = time_ns () in
-  result, (finish - start) / 1_000_000
-
-let print_result (k: int -> unit) (day: int) ~(printer: 'a -> string) first second =
+let print_solution (day: int) ~(printer: 'a -> string) ~time_taken solve =
   let input = [%string "inputs/day%{day#Int}.txt"] in
-  let first_result, first_millis = timed_millis first input in
-  let second_result, second_millis = timed_millis second input in
-  print_endline [%string "Day %{day#Int}: part A: %{printer first_result} [%{first_millis#Int}ms], part B: %{printer second_result} [%{second_millis#Int}ms]"];
-  let _ = k @@ first_millis + second_millis in
-  ()
+  let {part_a; part_b; shared_nanos} = solve input in
+  time_taken := Int63.(!time_taken + (part_a.nanos + part_b.nanos + shared_nanos));
+  print_endline [%string "Day %{day#Int}: shared: %{to_millis shared_nanos}ms part A: %{printer part_a.result} [%{to_millis part_a.nanos}ms], part B: %{printer part_b.result} [%{to_millis part_b.nanos}ms]"]
 
-let total_time (time_taken: int ref) (t: int) = 
-  time_taken := !time_taken + t
+let days time_taken = 
+  let unsolved () = () in
+  let print_int64_solution day solve () = print_solution day ~printer:Int64.to_string ~time_taken solve in
+  let print_int_solution day solve () = print_solution day ~printer:Int.to_string ~time_taken solve in
+  let print_string_solution day solve () = print_solution day ~printer:Fn.id ~time_taken solve in [|
+    Day1.(print_int_solution 1 solve);
+    Day2.(print_int_solution 2 solve);
+    Day3.(print_int_solution 3 solve);
+    Day4.(print_int_solution 4 solve);
+    Day5.(print_int_solution 5 solve);
+    Day6.(print_int_solution 6 solve);
+    Day7.(print_int_solution 7 solve);  
+    Day8.(print_int_solution 8 solve);
+    Day9.(print_int_solution 9 solve);
+    Day10.(print_int_solution 10 solve);
+    Day11.(print_int_solution 11 solve);
+    Day12.(print_int_solution 12 solve);
+    Day13.(print_int_solution 13 solve);
+    Day14.(print_int_solution 14 solve);
+    Day15.(print_int_solution 15 solve);
+    Day16.(print_int_solution 16 solve);
+    Day17.(print_string_solution 17 solve);
+    unsolved;
+    Day19.(print_int_solution 19 solve);
+    Day20.(print_int_solution 20 solve);
+    Day21.(print_int_solution 21 solve);
+    Day22.(print_int_solution 22 solve); 
+    Day23.(print_string_solution 23 solve);
+    Day24.(print_int64_solution 24 solve); 
+    Day25.(print_int_solution 25 solve);   
+  |]
 
-let ignore = Fn.const
 
 let () = 
-  let time_taken = ref 0 in
-  let print_string_result = print_result ~printer:Fn.id @@ total_time time_taken in
-  let print_int64_result = print_result ~printer:Int64.to_string @@ total_time time_taken in
-  let print_result = print_result ~printer:Int.to_string @@ total_time time_taken in
-  Day1.(print_result 1 part_a part_b);
-  Day2.(print_result 2 part_a part_b);
-  Day3.(print_result 3 part_a part_b);  
-  Day4.(print_result 4 part_a part_b);
-  Day5.(print_result 5 part_a part_b);
-  Day6.(print_result 6 part_a part_b);
-  Day7.(print_result 7 part_a part_b);  
-  Day8.(print_result 8 part_a part_b);
-  Day9.(print_result 9 part_a part_b);
-  Day10.(print_result 10 part_a part_b);
-  Day11.(print_result 11 part_a part_b);
-  Day12.(print_result 12 part_a part_b);
-  Day13.(print_result 13 part_a part_b);
-  Day14.(print_result 14 (part_a (101, 103)) (ignore 0));
-  Day15.(print_result 15 part_a part_b);
-  Day16.(print_result 16 part_a part_b);
-  Day17.(print_string_result 17 part_a part_b);
-  (* Day18.(print_string_result 18 (part_a >> Int.to_string) part_b); *)
-  Day19.(print_result 19 part_a part_b);
-  Day20.(print_result 20 (part_a 100) (part_b 100));
-  Day21.(print_result 21 part_a part_b);
-  Day22.(print_result 22 part_a part_b); 
-  Day23.(print_string_result 23 (part_a >> Int.to_string) part_b);
-  Day24.(print_int64_result 24 part_a part_b); 
-  Day25.(print_result 25 part_a part_b); 
-  print_endline [%string "Total time taken was %{!time_taken#Int}ms"]
+  let args = Sys.get_argv () in
+  let time_taken = ref (Int63.zero) in
+  let days = if Array.length args = 2 
+    then
+      let days = days time_taken in [|days.(Int.of_string args.(1) - 1)|]
+      else days time_taken in
+  Array.iter days ~f:(fun f -> f ());
+  print_endline [%string "Total time taken was %{to_millis !time_taken}ms"]

@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 type registers = {
   mutable a: int;
@@ -124,12 +125,12 @@ let brute_force () =
       print_endline [%string "Working: %{a#Int}: %{arr}"];
   done
 
-let part_a filename = 
-  let computer, program = read_input filename in
+let part_a (computer, program) = 
   let result = run computer program in
   String.concat ~sep:"," (result |> Array.to_list |> List.map ~f:Int.to_string)
 
-let part_b filename = 
-  let _, program = read_input filename in
+let part_b (_, program)  = 
   let result = part_b_run program 164542125272765 in (* Done by hand/brute force *)
   String.concat ~sep:"," (result |> Array.to_list |> List.map ~f:Int.to_string)
+
+let solve = solve read_input part_a part_b

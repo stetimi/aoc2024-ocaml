@@ -1,5 +1,6 @@
 open! Core
-open! Tools
+open Tools
+open Timings
 
 let numeric = "789456123 0A" |> String.to_array
 let directional = " ^A<v>" |> String.to_array
@@ -83,10 +84,10 @@ let complexity robots code =
   } in
   cost memos numeric code (robots + 1) * numeric_part code
 
-let part_a filename =
-  let codes = read_codes filename in
-  List.sum (module Int) codes ~f:(complexity 2)
+let part_a =
+  List.sum (module Int) ~f:(complexity 2)
 
-let part_b filename =
-  let codes = read_codes filename in
-  List.sum (module Int) codes ~f:(complexity 25)
+let part_b =
+  List.sum (module Int) ~f:(complexity 25)
+
+let solve = solve read_codes part_a part_b

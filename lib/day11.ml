@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 type stone = int64
 type stones_map = (stone, int64, Int64.comparator_witness) Map.t
@@ -49,8 +50,8 @@ let blink_one_time (frequencies: stones_map): stones_map =
 let count frequencies: int64 =
   Map.sum (module Int64) frequencies ~f:Fn.id
   
-let blink n filename =
-  let frequencies = ref @@ read_stones filename in
+let blink n stones =
+  let frequencies = ref stones in
   for _ = 1 to n do
     frequencies := blink_one_time !frequencies
   done;
@@ -59,3 +60,5 @@ let blink n filename =
 let part_a = blink 25
 
 let part_b = blink 75
+
+let solve = solve read_stones part_a part_b

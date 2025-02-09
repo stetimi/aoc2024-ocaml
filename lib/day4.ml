@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 let read_grid (filename: string): char Grid.t =
   let cells = In_channel.read_lines filename
@@ -21,10 +22,10 @@ let cross_mas_matches_at (g: char Grid.t) (xy: int * int): bool =
   let word = Grid.gather points '*' g |> String.of_array in
   Set.mem xmases word
   
-let part_a filename = 
-  let grid = read_grid filename in
+let part_a grid = 
   Grid.sum ~f:(count_xmas_matches_at grid) grid
   
-let part_b filename = 
-  let grid = read_grid filename in
+let part_b grid = 
   Grid.count ~f:(cross_mas_matches_at grid) grid
+
+let solve = solve read_grid part_a part_b

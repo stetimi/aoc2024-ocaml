@@ -1,6 +1,7 @@
 
-open Core
+open! Core
 open Tools
+open Timings
 
 type puzzle = {
   patterns: string list;
@@ -37,11 +38,11 @@ let count_matches patterns design =
   let go = memoize (module String) go in
   go design
   
-let part_a filename =
-  let {patterns; designs} = read_puzzle filename in
+let part_a {patterns; designs} =
   List.count designs ~f:(can_match_design patterns)
 
-let part_b filename = 
-  let {patterns; designs} = read_puzzle filename in
+let part_b {patterns; designs} = 
   List.sum (module Int) designs ~f:(count_matches patterns)
+
+let solve = solve read_puzzle part_a part_b
 

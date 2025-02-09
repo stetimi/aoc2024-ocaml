@@ -1,6 +1,7 @@
-open Core
+open! Core
 open Graph
 open Tools
+open Timings
 
 type string_set = (string, String.comparator_witness) Set_intf.Set.t
 type string_map = (string, string_set, String.comparator_witness) Map_intf.Map.t
@@ -57,8 +58,7 @@ let from_iter iter g =
   iter (fun v -> vs := v :: !vs) g;
   !vs
 
-let part_a filename =
-  let graph = read_lan_graph filename in
+let part_a graph =
   let computers = from_iter G.iter_vertex graph in
   let connections = from_iter G.iter_edges_e graph |> connections in
   let triples = List.concat_map computers ~f:(fun c1 ->
@@ -66,10 +66,12 @@ let part_a filename =
   ) |> StringTripleSet.of_list in
   Set.length triples
 
-let part_b filename =
-  read_lan_graph filename
+let part_b graph =
+  graph
   |> Clique.maximalcliques
   |> List.max_elt ~compare:(on List.length Int.compare)
   |> Option.value_exn
   |> List.sort ~compare:String.compare
   |> String.concat ~sep:","
+
+let solve = solve read_lan_graph (part_a >> Int.to_string) part_b

@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 type machine_spec = {
   buttons: float array;
@@ -50,13 +51,13 @@ let calc_num_tokens button_presses_filter machine_specs =
   |> List.filter ~f:button_presses_filter
   |> List.sum (module Int) ~f:(fun (a, b) -> 3 * a + b)
 
-let part_a filename = 
+let part_a specs = 
   let button_presses_filter (a, b) = a >= 0 && b >= 0 && a <= 100 && b <= 100 in
-  read_machine_specs filename 
+  calc_num_tokens button_presses_filter specs
+
+let part_b specs =
+  let button_presses_filter (a, b) = a >= 0 && b >= 0 in
+  List.map specs ~f:(fun {buttons; prize} -> {buttons; prize = Array.map prize ~f:(fun p -> p +. 10_000_000_000_000.)})
   |> calc_num_tokens button_presses_filter
 
-let part_b filename =
-  let button_presses_filter (a, b) = a >= 0 && b >= 0 in
-  read_machine_specs filename
-  |> List.map ~f:(fun {buttons; prize} -> {buttons; prize = Array.map prize ~f:(fun p -> p +. 10_000_000_000_000.)})
-  |> calc_num_tokens button_presses_filter
+let solve = solve read_machine_specs part_a part_b

@@ -1,6 +1,7 @@
 (executable
  (public_name aoc2024)
  (name main)
+ (ocamlopt_flags (:standard -O2))
  (libraries aoc2024 core)
  (preprocess
   (pps ppx_string))

@@ -3,10 +3,11 @@ open OUnit2
 open Aoc2024
 open Assertions
 open Tools
+open Day5
 
 let day5_tests = "day 5 test suite" >::: [
-  "part a example" >:: (fun _ -> assert_int_equals 143 (Day5.part_a "./test_inputs/day5.txt"));
-  "part b example" >:: (fun _ -> assert_int_equals 123 (Day5.part_b "./test_inputs/day5.txt"));
+  "part a example" >:: (fun _ -> assert_int_equals 143 (part_a @@ shared "./test_inputs/day5.txt"));
+  "part b example" >:: (fun _ -> assert_int_equals 123 (part_b @@ shared "./test_inputs/day5.txt"));
   "middle_value" >:: (fun _ -> assert_int_equals 47 (Day5.middle_value [75;97;47;61;53]));
   "to_index_map" >:: (fun _ ->
     let values = [75;97;47;61;53] in

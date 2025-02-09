@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 type robot = {
   mutable position: int * int;
@@ -94,3 +95,5 @@ let part_b bounds n filename =
 
 (* Run in utop, visually look for tree *)
 let run n = part_b (101,103) n "inputs/day14.txt"
+
+let solve = solve Fn.id (part_a (101, 103)) (Fn.const 0)

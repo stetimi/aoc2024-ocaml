@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 let read_map filename =
   In_channel.read_lines filename 
@@ -51,12 +52,15 @@ let antinode_positions antinodes grid =
   |> Sequence.to_list 
   |> Set.of_list (module Int)
 
-let part_a filename = 
-  read_map filename
+let part_a map = 
+  map
   |> antinode_positions @@ antinodes (generate_resonant_antinode_pairs @@ Sequence.singleton 1)
   |> Set.length
 
-let part_b filename = 
-  read_map filename
+let part_b map = 
+  map
   |> antinode_positions @@ antinodes (generate_resonant_antinode_pairs ints)
   |> Set.length
+
+let solve = solve read_map part_a part_b
+

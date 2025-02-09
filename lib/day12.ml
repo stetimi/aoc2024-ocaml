@@ -1,5 +1,6 @@
-open Core
+open! Core
 open Tools
+open Timings
 
 type garden = char array array
 
@@ -93,9 +94,10 @@ let corners (region: IntTupleSet.t): int =
   |> Set.to_list
   |> List.sum (module Int) ~f:count_corners
 
-let run count filename =
-  let garden = read_garden filename in
-  let regions = find_all_regions garden in
+let regions filename =
+  read_garden filename |> find_all_regions
+
+let run count regions =
   let score region =
     let area = Set.length region in
     let count = count region in
@@ -105,3 +107,5 @@ let run count filename =
 let part_a = run perimeter
 
 let part_b = run corners
+
+let solve = solve regions part_a part_b

@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 type equation = {target: int; numbers: int list}
 
@@ -38,12 +39,12 @@ let part_a_ops = [(+); fun x y -> x * y]
 
 let part_b_ops = [(+); (fun x y -> x * y); (fun x y -> Int.of_string [%string "%{x#Int}%{y#Int}"])]
 
-let part_a filename = 
-  read_equations filename 
-  |> List.filter ~f:(can_be_calibrated part_a_ops)
+let part_a equations = 
+  List.filter equations ~f:(can_be_calibrated part_a_ops)
   |> List.sum (module Int) ~f:(fun e -> e.target)
 
-let part_b filename = 
-  read_equations filename 
-  |> List.filter ~f:(can_be_calibrated part_b_ops)
+let part_b equations = 
+  List.filter equations ~f:(can_be_calibrated part_b_ops)
   |> List.sum (module Int) ~f:(fun e -> e.target)
+
+let solve = solve read_equations part_a part_b

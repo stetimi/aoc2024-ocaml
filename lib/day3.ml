@@ -1,4 +1,5 @@
-open Core
+open! Core
+open Timings
 
 let sum_muls re text =
   let matches = Re.all re text |> List.map ~f:Re.Group.all in
@@ -22,14 +23,12 @@ let re_mul =
 
 let part_a_sum_muls = sum_muls (Re.compile re_mul)
 
-let part_b_sum_muls = 
+let part_a = sum_muls (Re.compile re_mul)
+
+let part_b = 
   let re_do = Re.str "do()" in
   let re_dont = Re.str "don't()" in
   let re_expr = Re.alt [re_mul; re_do; re_dont] in  
   sum_muls (Re.compile re_expr)
 
-let part_a filename =
-  In_channel.read_all filename |> part_a_sum_muls
-
-let part_b filename =
-  In_channel.read_all filename |> part_b_sum_muls
+let solve = solve In_channel.read_all part_a part_b

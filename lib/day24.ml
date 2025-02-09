@@ -1,5 +1,6 @@
 open! Core
-open! Tools
+open Tools
+open Timings
 
 type gate_type = Xor | Or | And [@@deriving eq, hash, ord, sexp, show]
 type gate = {
@@ -189,8 +190,11 @@ let solved gates =
   |> swap_outs "fkp" "z06" (* 21 *)
   |> swap_outs "ngr" "z11" (* 16*)
   |> swap_outs "krj" "bpt" (* 11*)
-  |> swap_outs "z31" "mfm" 
+  |> swap_outs "z31" "mfm"
+  
+let solve = solve Fn.id part_a part_b
 
+  
 
 (*
 221 gates
