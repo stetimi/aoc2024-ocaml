@@ -24,19 +24,17 @@ let walk keypad x y path =
 
 let divmod x y = x / y, x mod y
 
-let repeat len ch = Array.create ~len ch |> String.of_array
-
 let paths_between keypad start finish =
   let index v = Array.findi_exn keypad ~f:(fun _ k -> Char.(k = v)) |> fst in
   let y1, x1 = divmod (index start) 3 in
   let y2, x2 = divmod (index finish) 3 in
   let hor_ch = if x2 > x1 then '>' else '<' in
-  let hor = repeat (Int.abs (x2 - x1)) hor_ch in
+  let hor = String.make (Int.abs (x2 - x1)) hor_ch in
   let ver_ch = if y2 > y1 then 'v' else '^' in
-  let ver = repeat (Int.abs (y2 - y1)) ver_ch in
+  let ver = String.make (Int.abs (y2 - y1)) ver_ch in
   let falls_into_gap path = 
     let walked = walk keypad x1 y1 (Array.to_sequence @@ String.to_array path) in
-    Sequence.mem walked ' ' ~equal:(Char.equal) in
+    Sequence.mem walked ' ' ~equal:(Char.(=)) in
   List.remove_consecutive_duplicates [hor ^ ver; ver ^ hor] ~equal:String.equal
   |> List.filter ~f:(Fn.non falls_into_gap)
   |> List.map ~f:(fun path -> path ^ "A")

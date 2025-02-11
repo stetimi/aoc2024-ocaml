@@ -41,13 +41,11 @@ let calc_button_presses machine_spec =
   let det = (a1 *. b2 -. b1 *. a2) in
   (c1 *. b2 -. b1 *. c2) /. det, (a1 *. c2 -. c1 *. a2) /. det 
 
-let apply_to_tuple f (a, b) = f a, f b
-
 let calc_num_tokens button_presses_filter machine_specs =
   machine_specs
   |> List.map ~f:calc_button_presses
   |> List.filter ~f:(fun (a, b) -> Float.is_integer a && Float.is_integer b)
-  |> List.map ~f:(apply_to_tuple Float.to_int)
+  |> List.map ~f:(Tuple2.map ~f:Float.to_int)
   |> List.filter ~f:button_presses_filter
   |> List.sum (module Int) ~f:(fun (a, b) -> 3 * a + b)
 
